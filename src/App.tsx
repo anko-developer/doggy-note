@@ -1,3 +1,13 @@
+import { RouterProvider } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { router } from './router'
+
+const queryClient = new QueryClient()
+
 export default function App() {
-  return <div className="p-4 text-[#211922]">Doggy-note</div>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  )
 }
