@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+:root {
+  --color-brand: #e60023;
+  --color-text-primary: #211922;
+  --color-text-secondary: #62625b;
+  --color-text-muted: #91918c;
+  --color-surface: #ffffff;
+  --color-surface-warm: #f6f6f3;
+  --color-sand: #e5e5e0;
+  --color-warm: #e0e0d9;
+  --color-border: #e5e5e0;
+}
