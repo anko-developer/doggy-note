@@ -1,6 +1,4 @@
-import Anthropic from 'npm:@anthropic-ai/sdk'
-
-const client = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY') })
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY') ?? ''
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 })
@@ -29,13 +27,21 @@ ${teacher_note ? `선생님 메모: ${teacher_note}` : ''}
 1~2문장으로, 강아지 이름을 포함해서, 이모지 1개 포함, 자연스러운 반말체로 작성.`
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 200,
-      messages: [{ role: 'user', content: prompt }],
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        max_tokens: 200,
+        messages: [{ role: 'user', content: prompt }],
+      }),
     })
 
-    const summary = (message.content[0] as { type: 'text'; text: string }).text
+    const data = await res.json()
+    const summary = data.choices?.[0]?.message?.content ?? ''
     return Response.json({ summary })
   } catch (error) {
     console.error(error)
