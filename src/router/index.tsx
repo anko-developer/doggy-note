@@ -10,11 +10,13 @@ import MealPlanPage from '@/pages/MealPlanPage'
 import InviteAcceptPage from '@/pages/InviteAcceptPage'
 import AppLayout from '@/components/layout/AppLayout'
 import AuthCallbackPage from '@/pages/AuthCallbackPage'
+import JoinDaycarePage from '@/pages/JoinDaycarePage'
 
 export const router = createBrowserRouter([
   { path: '/invite/:token', element: <InviteAcceptPage /> },
   { path: '/auth/callback', element: <AuthCallbackPage /> },
   { path: '/onboarding', element: <OnboardingPage /> },
+  { path: '/onboarding/join-daycare', element: <JoinDaycarePage /> },
   {
     element: <AppLayout />,
     children: [
