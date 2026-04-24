@@ -1,3 +1,46 @@
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
+import { useReportRealtime } from '@/hooks/useRealtime'
+import ReportCard from '@/components/reports/ReportCard'
+
 export default function GuardianFeedPage() {
-  return <div className="p-4">Guardian Feed</div>
+  const { user } = useAuth()
+
+  const { data: dogs } = useQuery({
+    queryKey: ['my-dogs', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await (supabase as any).from('dogs').select('*').eq('owner_id', user!.id)
+      return data ?? []
+    },
+  })
+
+  const primaryDog = dogs?.[0]
+  useReportRealtime(primaryDog?.id ?? '')
+
+  const { data: reports } = useQuery({
+    queryKey: ['reports', primaryDog?.id],
+    enabled: !!primaryDog,
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from('daily_reports')
+        .select('*')
+        .eq('dog_id', primaryDog!.id)
+        .not('published_at', 'is', null)
+        .order('date', { ascending: false })
+        .limit(20)
+      return data ?? []
+    },
+  })
+
+  if (!primaryDog) return <div className="p-4 text-center text-[#91918c]">아직 연결된 강아지가 없어요.</div>
+
+  return (
+    <div className="flex flex-col gap-4 p-4 pb-24">
+      <h1 className="text-xl font-bold text-[#211922]">{primaryDog.name}의 알림장</h1>
+      {reports?.map((r: any) => <ReportCard key={r.id} report={r} />)}
+      {reports?.length === 0 && <p className="text-center text-sm text-[#91918c]">아직 받은 알림장이 없어요 🐾</p>}
+    </div>
+  )
 }
