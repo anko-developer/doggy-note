@@ -7,15 +7,10 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
         navigate('/onboarding', { replace: true })
-      } else if (event === 'INITIAL_SESSION') {
-        if (session) {
-          navigate('/onboarding', { replace: true })
-        } else {
-          navigate('/onboarding', { replace: true })
-        }
       }
+      // If INITIAL_SESSION fires with null, stay and wait for SIGNED_IN after code exchange
     })
     return () => subscription.unsubscribe()
   }, [navigate])
