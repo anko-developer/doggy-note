@@ -13,15 +13,6 @@ export function useAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ user: null, role: null, loading: true })
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const user = data.session?.user ?? null
-      if (user) {
-        fetchRole(user.id).then(role => setState({ user, role, loading: false }))
-      } else {
-        setState({ user: null, role: null, loading: false })
-      }
-    })
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       const user = session?.user ?? null
       if (user) {
