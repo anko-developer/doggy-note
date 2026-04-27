@@ -11,11 +11,11 @@ export default function AppLayout() {
 
   return (
     <div className="mx-auto min-h-screen max-w-md bg-white">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-[#e5e5e0]">
-        <span className="font-bold text-[#211922]">Doggy-note 🐾</span>
+      <header className="flex items-center justify-between px-4 py-3 border-b border-[#CACACB]">
+        <span className="font-bold text-[#111111]">Doggy-note 🐾</span>
         <button
           onClick={signOut}
-          className="text-sm text-[#91918c]"
+          className="text-sm text-[#9E9EA0]"
         >
           로그아웃
         </button>

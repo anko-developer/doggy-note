@@ -65,7 +65,7 @@ export default function AnnouncementsPage() {
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#211922]">공지사항</h1>
+        <h1 className="text-xl font-bold text-[#111111]">공지사항</h1>
         {role === 'teacher' && (
           <Button onClick={() => setIsWriting(!isWriting)} variant="outline" size="sm" className="rounded-[16px]">
             {isWriting ? '취소' : '작성'}
@@ -74,33 +74,33 @@ export default function AnnouncementsPage() {
       </div>
 
       {isWriting && (
-        <div className="flex flex-col gap-3 rounded-[20px] bg-[#f6f6f3] p-4">
+        <div className="flex flex-col gap-3 rounded-[20px] bg-[#F5F5F5] p-4">
           <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="제목" className="rounded-[16px]" />
           <Textarea value={body} onChange={e => setBody(e.target.value)} placeholder="내용" className="rounded-[16px] min-h-[100px]" />
           <Button onClick={() => create.mutate()} disabled={!title || !body || create.isPending}
-            className="rounded-[16px] bg-[#e60023] text-white">
+            className="rounded-[16px] bg-[#111111] text-white">
             {create.isPending ? '저장 중...' : '공지 올리기'}
           </Button>
         </div>
       )}
 
       {announcements !== undefined && announcements.length === 0 && !isWriting && (
-        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
+        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#F5F5F5] py-14 text-center">
           <p className="text-4xl mb-3">📢</p>
-          <p className="font-bold text-[#211922]">공지사항이 없어요</p>
-          <p className="text-sm text-[#91918c] mt-1">
+          <p className="font-bold text-[#111111]">공지사항이 없어요</p>
+          <p className="text-sm text-[#9E9EA0] mt-1">
             {role === 'teacher' ? '새 공지를 작성해보세요.' : '선생님의 공지를 기다리고 있어요.'}
           </p>
         </div>
       )}
 
       {(announcements ?? []).map((a: any) => (
-        <div key={a.id} className="rounded-[20px] border border-[#e5e5e0] bg-white p-4">
-          <p className="text-xs text-[#91918c] mb-1">
+        <div key={a.id} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
+          <p className="text-xs text-[#9E9EA0] mb-1">
             {new Date(a.published_at).toLocaleDateString('ko-KR')}
           </p>
-          <p className="font-bold text-[#211922] mb-1">{a.title}</p>
-          <p className="text-sm text-[#62625b] whitespace-pre-wrap">{a.body}</p>
+          <p className="font-bold text-[#111111] mb-1">{a.title}</p>
+          <p className="text-sm text-[#707072] whitespace-pre-wrap">{a.body}</p>
         </div>
       ))}
     </div>

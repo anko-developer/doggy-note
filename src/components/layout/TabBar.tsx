@@ -22,7 +22,7 @@ export default function TabBar() {
   const tabs = role === 'teacher' ? TEACHER_TABS : GUARDIAN_TABS
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 flex border-t border-[#e5e5e0] bg-white">
+    <nav className="fixed bottom-0 left-0 right-0 flex border-t border-[#CACACB] bg-white">
       {tabs.map(tab => (
         <NavLink
           key={tab.to}
@@ -30,7 +30,7 @@ export default function TabBar() {
           end={tab.to === '/'}
           className={({ isActive }) => cn(
             'flex flex-1 flex-col items-center gap-0.5 py-2 text-xs',
-            isActive ? 'text-[#e60023] font-medium' : 'text-[#91918c]'
+            isActive ? 'text-[#111111] font-medium' : 'text-[#9E9EA0]'
           )}
         >
           <span className="text-lg">{tab.icon}</span>

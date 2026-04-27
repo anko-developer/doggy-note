@@ -17,17 +17,17 @@ export default function JoinDaycarePage() {
   if (mode === 'choose') {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">
-        <h2 className="text-2xl font-bold text-[#211922]">유치원 설정</h2>
-        <p className="text-sm text-[#62625b] text-center">원장님이신가요, 아니면 직원으로 합류하시나요?</p>
+        <h2 className="text-2xl font-bold text-[#111111]">유치원 설정</h2>
+        <p className="text-sm text-[#707072] text-center">원장님이신가요, 아니면 직원으로 합류하시나요?</p>
         <button
           onClick={() => setMode('create')}
-          className="w-full max-w-xs rounded-[16px] bg-[#e60023] py-3 text-white font-medium"
+          className="w-full max-w-xs rounded-[30px] bg-[#111111] py-3 text-white font-medium"
         >
           새 유치원 만들기
         </button>
         <button
           onClick={() => setMode('join')}
-          className="w-full max-w-xs rounded-[16px] border border-[#e5e5e0] py-3 text-[#211922] font-medium"
+          className="w-full max-w-xs rounded-[30px] border border-[#CACACB] py-3 text-[#111111] font-medium"
         >
           코드로 합류하기
         </button>

@@ -62,7 +62,7 @@ export default function MealPlanPage() {
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#211922]">이번 주 식단</h1>
+        <h1 className="text-xl font-bold text-[#111111]">이번 주 식단</h1>
         {role === 'teacher' && (
           <Button onClick={() => { setDraft(entries.length ? entries : draft); setEditing(!editing) }}
             variant="outline" size="sm" className="rounded-[16px]">
@@ -75,8 +75,8 @@ export default function MealPlanPage() {
         const e = entries.find(e => e.day === day) ?? { day, morning: '-', lunch: '-', snack: '-' }
         const d = draft.find(e => e.day === day)!
         return (
-          <div key={day} className="rounded-[20px] border border-[#e5e5e0] bg-white p-4">
-            <p className="font-bold text-[#211922] mb-2">{DAY_KO[day]}요일</p>
+          <div key={day} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
+            <p className="font-bold text-[#111111] mb-2">{DAY_KO[day]}요일</p>
             {editing ? (
               <div className="flex flex-col gap-2">
                 {(['morning', 'lunch', 'snack'] as const).map(meal => (
@@ -87,7 +87,7 @@ export default function MealPlanPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col gap-1 text-sm text-[#62625b]">
+              <div className="flex flex-col gap-1 text-sm text-[#707072]">
                 <span>🌅 {e.morning}</span>
                 <span>☀️ {e.lunch}</span>
                 <span>🍪 {e.snack}</span>
@@ -99,7 +99,7 @@ export default function MealPlanPage() {
 
       {editing && (
         <Button onClick={() => save.mutate()} disabled={save.isPending}
-          className="rounded-[16px] bg-[#e60023] text-white">
+          className="rounded-[16px] bg-[#111111] text-white">
           {save.isPending ? '저장 중...' : '식단 저장'}
         </Button>
       )}

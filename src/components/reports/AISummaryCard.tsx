@@ -48,26 +48,26 @@ export default function AISummaryCard({ reportId, existingSummary, failed, dogNa
   })
 
   return (
-    <div className="rounded-[12px] border border-[#e5e5e0] bg-[hsla(60,20%,98%,0.5)] p-4">
+    <div className="rounded-[12px] border border-[#CACACB] bg-[hsla(60,20%,98%,0.5)] p-4">
       <div className="mb-2 flex items-center gap-2">
-        <span className="text-xs font-medium text-[#91918c]">✨ AI 요약</span>
+        <span className="text-xs font-medium text-[#9E9EA0]">✨ AI 요약</span>
         {!generate.isPending && (
           <Button
             onClick={() => generate.mutate()}
             variant="ghost"
             size="sm"
-            className="text-xs text-[#62625b]"
+            className="text-xs text-[#707072]"
           >
             {summary ? '재생성' : '생성하기'}
           </Button>
         )}
       </div>
-      {generate.isPending && <p className="text-sm text-[#91918c] animate-pulse">요약 생성 중...</p>}
+      {generate.isPending && <p className="text-sm text-[#9E9EA0] animate-pulse">요약 생성 중...</p>}
       {isFailed && !generate.isPending && (
         <p className="text-sm text-red-500">요약 생성에 실패했어요. <button onClick={() => generate.mutate()} className="underline">재시도</button></p>
       )}
       {summary && !generate.isPending && (
-        <p className="text-sm text-[#211922] leading-relaxed">{summary}</p>
+        <p className="text-sm text-[#111111] leading-relaxed">{summary}</p>
       )}
     </div>
   )

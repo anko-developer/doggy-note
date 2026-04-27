@@ -42,8 +42,8 @@ export default function CreateDaycare({ userId, onCreated }: Props) {
 
   return (
     <div className="flex flex-col gap-4 p-6 w-full max-w-xs">
-      <h2 className="text-xl font-bold text-[#211922]">새 유치원 만들기</h2>
-      <p className="text-sm text-[#62625b]">유치원 이름을 입력하면 입장 코드가 자동으로 생성돼요.</p>
+      <h2 className="text-xl font-bold text-[#111111]">새 유치원 만들기</h2>
+      <p className="text-sm text-[#707072]">유치원 이름을 입력하면 입장 코드가 자동으로 생성돼요.</p>
       <Input
         value={name}
         onChange={e => setName(e.target.value)}
@@ -54,7 +54,7 @@ export default function CreateDaycare({ userId, onCreated }: Props) {
       <Button
         onClick={handleCreate}
         disabled={!name.trim() || loading}
-        className="rounded-[16px] bg-[#e60023] text-white"
+        className="rounded-[16px] bg-[#111111] text-white"
       >
         {loading ? '생성 중...' : '만들기'}
       </Button>

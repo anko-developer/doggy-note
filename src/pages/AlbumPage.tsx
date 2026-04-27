@@ -26,15 +26,15 @@ function PhotoGrid({ dogId }: { dogId: string }) {
       />
       <button
         onClick={() => inputRef.current?.click()}
-        className="mb-4 w-full rounded-[16px] border border-dashed border-[#e5e5e0] py-4 text-sm text-[#91918c]"
+        className="mb-4 w-full rounded-[16px] border border-dashed border-[#CACACB] py-4 text-sm text-[#9E9EA0]"
       >
         + 사진 추가
       </button>
       {photos !== undefined && photos.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
+        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#F5F5F5] py-14 text-center">
           <p className="text-4xl mb-3">🐾</p>
-          <p className="font-bold text-[#211922]">아직 사진이 없어요</p>
-          <p className="text-sm text-[#91918c] mt-1">위 버튼으로 첫 사진을 추가해보세요.</p>
+          <p className="font-bold text-[#111111]">아직 사진이 없어요</p>
+          <p className="text-sm text-[#9E9EA0] mt-1">위 버튼으로 첫 사진을 추가해보세요.</p>
         </div>
       ) : (
         <div style={{ columns: 2, columnGap: 8 }}>
@@ -68,11 +68,11 @@ export default function AlbumPage() {
   })
 
   const dog = dogs?.[0]
-  if (!dog) return <div className="p-4 text-center text-[#91918c]">강아지를 먼저 등록해주세요.</div>
+  if (!dog) return <div className="p-4 text-center text-[#9E9EA0]">강아지를 먼저 등록해주세요.</div>
 
   return (
     <div className="p-4 pb-24">
-      <h1 className="mb-4 text-xl font-bold text-[#211922]">앨범</h1>
+      <h1 className="mb-4 text-xl font-bold text-[#111111]">앨범</h1>
       <PhotoGrid dogId={dog.id} />
     </div>
   )

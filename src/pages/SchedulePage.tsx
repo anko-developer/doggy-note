@@ -65,7 +65,7 @@ export default function SchedulePage() {
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#211922]">일정표</h1>
+        <h1 className="text-xl font-bold text-[#111111]">일정표</h1>
         {role === 'teacher' && (
           <Button onClick={() => setIsAdding(!isAdding)} variant="outline" size="sm" className="rounded-[16px]">
             {isAdding ? '취소' : '+ 추가'}
@@ -74,34 +74,34 @@ export default function SchedulePage() {
       </div>
 
       {isAdding && (
-        <div className="flex flex-col gap-3 rounded-[20px] bg-[#f6f6f3] p-4">
+        <div className="flex flex-col gap-3 rounded-[20px] bg-[#F5F5F5] p-4">
           <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="일정 제목" className="rounded-[16px]" />
           <Input type="date" value={date} onChange={e => setDate(e.target.value)} className="rounded-[16px]" />
           <Input value={desc} onChange={e => setDesc(e.target.value)} placeholder="상세 내용 (선택)" className="rounded-[16px]" />
           <Button onClick={() => create.mutate()} disabled={!title || !date || create.isPending}
-            className="rounded-[16px] bg-[#e60023] text-white">
+            className="rounded-[16px] bg-[#111111] text-white">
             저장
           </Button>
         </div>
       )}
 
       {schedules !== undefined && schedules.length === 0 && !isAdding && (
-        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
+        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#F5F5F5] py-14 text-center">
           <p className="text-4xl mb-3">📅</p>
-          <p className="font-bold text-[#211922]">예정된 일정이 없어요</p>
-          <p className="text-sm text-[#91918c] mt-1">
+          <p className="font-bold text-[#111111]">예정된 일정이 없어요</p>
+          <p className="text-sm text-[#9E9EA0] mt-1">
             {role === 'teacher' ? '일정을 추가해보세요.' : '선생님이 일정을 등록하면 여기에 표시돼요.'}
           </p>
         </div>
       )}
 
       {(schedules ?? []).map((s: any) => (
-        <div key={s.id} className="rounded-[20px] border border-[#e5e5e0] bg-white p-4">
-          <p className="text-xs text-[#91918c] mb-1">
+        <div key={s.id} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
+          <p className="text-xs text-[#9E9EA0] mb-1">
             {new Date(s.event_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
           </p>
-          <p className="font-bold text-[#211922]">{s.title}</p>
-          {s.description && <p className="text-sm text-[#62625b] mt-1">{s.description}</p>}
+          <p className="font-bold text-[#111111]">{s.title}</p>
+          {s.description && <p className="text-sm text-[#707072] mt-1">{s.description}</p>}
         </div>
       ))}
     </div>

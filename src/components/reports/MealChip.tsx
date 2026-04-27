@@ -8,10 +8,10 @@ export default function MealChip({ meal, selected, onSelect }: Props) {
     <button
       onClick={() => onSelect(meal)}
       className={cn(
-        'rounded-[16px] px-4 py-2 text-sm font-medium transition-colors',
+        'rounded-[30px] px-4 py-2 text-sm font-medium transition-colors',
         selected
-          ? 'bg-[#e60023] text-white'
-          : 'bg-[#e5e5e0] text-[#211922]'
+          ? 'bg-[#111111] text-white'
+          : 'bg-[#F5F5F5] text-[#111111]'
       )}
     >
       {MEALS_LABELS[meal]}

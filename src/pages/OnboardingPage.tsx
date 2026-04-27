@@ -27,10 +27,10 @@ export default function OnboardingPage() {
   if (!user) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-6">
-        <h1 className="text-3xl font-bold text-[#211922]">Doggy-note 🐾</h1>
+        <h1 className="text-3xl font-bold text-[#111111]">Doggy-note 🐾</h1>
         <button
           onClick={signInWithGoogle}
-          className="rounded-[16px] bg-[#e60023] px-8 py-3 text-white font-medium"
+          className="rounded-[30px] bg-[#111111] px-8 py-3 text-white font-medium"
         >
           Google로 시작하기
         </button>

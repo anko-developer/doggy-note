@@ -36,8 +36,8 @@ export default function JoinDaycare({ userId, onJoined }: Props) {
 
   return (
     <div className="flex flex-col gap-4 p-6">
-      <h2 className="text-xl font-bold text-[#211922]">유치원 코드 입력</h2>
-      <p className="text-sm text-[#62625b]">원장님께 받은 6자리 코드를 입력해 주세요.</p>
+      <h2 className="text-xl font-bold text-[#111111]">유치원 코드 입력</h2>
+      <p className="text-sm text-[#707072]">원장님께 받은 6자리 코드를 입력해 주세요.</p>
       <Input
         value={code}
         onChange={e => setCode(e.target.value.toUpperCase())}
@@ -49,7 +49,7 @@ export default function JoinDaycare({ userId, onJoined }: Props) {
       <Button
         onClick={handleJoin}
         disabled={code.length !== 6 || loading}
-        className="rounded-[16px] bg-[#e60023] text-white"
+        className="rounded-[16px] bg-[#111111] text-white"
       >
         {loading ? '확인 중...' : '합류하기'}
       </Button>
