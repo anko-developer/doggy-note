@@ -34,7 +34,9 @@ export default function GuardianFeedPage() {
     },
   })
 
-  if (dogs !== undefined && !primaryDog) return (
+  if (!dogs) return null
+
+  if (!primaryDog) return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 p-6 text-center">
       <p className="text-4xl">🐾</p>
       <p className="font-bold text-[#211922]">아직 연결된 강아지가 없어요</p>
