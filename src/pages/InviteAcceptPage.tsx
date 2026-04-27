@@ -25,7 +25,11 @@ export default function InviteAcceptPage() {
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-6">
         <p className="text-xl font-bold text-[#211922]">🐾 초대 링크를 받으셨군요!</p>
         <p className="text-sm text-[#62625b] text-center">Google 계정으로 로그인하면 강아지와 연결돼요.</p>
-        <button onClick={signInWithGoogle}
+        <button
+          onClick={() => {
+            if (token) localStorage.setItem('pendingInviteToken', token)
+            signInWithGoogle()
+          }}
           className="rounded-[16px] bg-[#e60023] px-8 py-3 text-white font-medium">
           Google로 시작하기
         </button>

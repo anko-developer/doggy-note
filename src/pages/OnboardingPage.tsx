@@ -12,6 +12,15 @@ export default function OnboardingPage() {
 
   if (loading) return <div className="p-4">Loading...</div>
 
+  if (user) {
+    const pendingToken = localStorage.getItem('pendingInviteToken')
+    if (pendingToken) {
+      localStorage.removeItem('pendingInviteToken')
+      navigate(`/invite/${pendingToken}`, { replace: true })
+      return null
+    }
+  }
+
   if (user && role === 'teacher') { navigate('/'); return null }
   if (user && role === 'guardian') { navigate('/feed'); return null }
 
