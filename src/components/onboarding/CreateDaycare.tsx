@@ -19,14 +19,13 @@ export default function CreateDaycare({ userId, onCreated }: Props) {
     setLoading(true)
     setError('')
 
+    const daycareId = crypto.randomUUID()
     const joinCode = generateCode()
-    const { data: daycare, error: createErr } = await (supabase as any)
+    const { error: createErr } = await (supabase as any)
       .from('daycares')
-      .insert({ name: name.trim(), join_code: joinCode })
-      .select('id')
-      .single()
+      .insert({ id: daycareId, name: name.trim(), join_code: joinCode })
 
-    if (createErr || !daycare) {
+    if (createErr) {
       setError('유치원 생성에 실패했어요. 다시 시도해주세요.')
       setLoading(false)
       return
@@ -34,11 +33,11 @@ export default function CreateDaycare({ userId, onCreated }: Props) {
 
     await (supabase as any)
       .from('user_profiles')
-      .update({ daycare_id: daycare.id })
+      .update({ daycare_id: daycareId })
       .eq('id', userId)
 
     setLoading(false)
-    onCreated(daycare.id)
+    onCreated(daycareId)
   }
 
   return (
