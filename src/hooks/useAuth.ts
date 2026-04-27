@@ -6,19 +6,20 @@ import type { UserRole } from '@/types/domain'
 type AuthState = {
   user: User | null
   role: UserRole | null
+  daycareId: string | null
   loading: boolean
 }
 
 export function useAuth(): AuthState {
-  const [state, setState] = useState<AuthState>({ user: null, role: null, loading: true })
+  const [state, setState] = useState<AuthState>({ user: null, role: null, daycareId: null, loading: true })
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       const user = session?.user ?? null
       if (user) {
-        fetchRole(user.id).then(role => setState({ user, role, loading: false }))
+        fetchProfile(user.id).then(({ role, daycareId }) => setState({ user, role, daycareId, loading: false }))
       } else {
-        setState({ user: null, role: null, loading: false })
+        setState({ user: null, role: null, daycareId: null, loading: false })
       }
     })
 
@@ -28,14 +29,17 @@ export function useAuth(): AuthState {
   return state
 }
 
-async function fetchRole(userId: string): Promise<UserRole | null> {
+async function fetchProfile(userId: string): Promise<{ role: UserRole | null; daycareId: string | null }> {
   const { data } = await supabase
     .from('user_profiles')
-    .select('role')
+    .select('role, daycare_id')
     .eq('id', userId)
     .single()
-  const row = data as { role: string } | null
-  return (row?.role as UserRole) ?? null
+  const row = data as { role: string; daycare_id: string | null } | null
+  return {
+    role: (row?.role as UserRole) ?? null,
+    daycareId: row?.daycare_id ?? null,
+  }
 }
 
 export async function signInWithGoogle() {
