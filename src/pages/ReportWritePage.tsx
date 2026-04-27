@@ -7,6 +7,7 @@ import MealChip from '@/components/reports/MealChip'
 import TrainingLog from '@/components/reports/TrainingLog'
 import AISummaryCard from '@/components/reports/AISummaryCard'
 import { useTodayReport, useUpsertReport, usePublishReport } from '@/hooks/useReport'
+import { useAuth } from '@/hooks/useAuth'
 import type { Mood, MealsEaten, TrainingEntry } from '@/types/domain'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,6 +16,7 @@ import { Input } from '@/components/ui/input'
 export default function ReportWritePage() {
   const { dogId } = useParams<{ dogId: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { data: report } = useTodayReport(dogId!)
   const upsert = useUpsertReport()
   const publish = usePublishReport()
@@ -50,6 +52,7 @@ export default function ReportWritePage() {
     await upsert.mutateAsync({
       id: report?.id,
       dog_id: dogId!,
+      teacher_id: user!.id,
       date: new Date().toISOString().split('T')[0],
       mood,
       meals_eaten: meals,

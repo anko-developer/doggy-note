@@ -4,6 +4,7 @@ import type { Mood, MealsEaten, TrainingEntry } from '@/types/domain'
 
 export type ReportDraft = {
   dog_id: string
+  teacher_id: string
   date: string
   meals_eaten: MealsEaten
   food_brand_today: string
