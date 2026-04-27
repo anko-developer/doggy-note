@@ -22,14 +22,25 @@ export default function SchedulePage() {
     },
   })
 
+  const { data: guardianDog } = useQuery({
+    queryKey: ['guardian-dog', user?.id],
+    enabled: !!user && role === 'guardian',
+    queryFn: async () => {
+      const { data } = await (supabase as any).from('dogs').select('daycare_id').eq('owner_id', user!.id).limit(1).single()
+      return data
+    },
+  })
+
+  const daycareId = role === 'guardian' ? guardianDog?.daycare_id : profile?.daycare_id
+
   const { data: schedules } = useQuery({
-    queryKey: ['schedules', profile?.daycare_id],
-    enabled: !!profile?.daycare_id,
+    queryKey: ['schedules', daycareId],
+    enabled: !!daycareId,
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from('schedules')
         .select('*')
-        .eq('daycare_id', profile!.daycare_id!)
+        .eq('daycare_id', daycareId!)
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date')
       return data ?? []
@@ -39,7 +50,7 @@ export default function SchedulePage() {
   const create = useMutation({
     mutationFn: async () => {
       await (supabase as any).from('schedules').insert({
-        daycare_id: profile!.daycare_id!,
+        daycare_id: daycareId!,
         title,
         description: desc,
         event_date: date,
@@ -71,6 +82,16 @@ export default function SchedulePage() {
             className="rounded-[16px] bg-[#e60023] text-white">
             저장
           </Button>
+        </div>
+      )}
+
+      {(schedules ?? []).length === 0 && !isAdding && (
+        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
+          <p className="text-4xl mb-3">📅</p>
+          <p className="font-bold text-[#211922]">예정된 일정이 없어요</p>
+          <p className="text-sm text-[#91918c] mt-1">
+            {role === 'teacher' ? '일정을 추가해보세요.' : '선생님이 일정을 등록하면 여기에 표시돼요.'}
+          </p>
         </div>
       )}
 

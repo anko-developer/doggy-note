@@ -30,20 +30,28 @@ function PhotoGrid({ dogId }: { dogId: string }) {
       >
         + 사진 추가
       </button>
-      <div style={{ columns: 2, columnGap: 8 }}>
-        {(photos ?? []).map((p: any) => {
-          const { data } = (supabase as any).storage.from('photos').getPublicUrl(p.storage_path)
-          return (
-            <img
-              key={p.id}
-              src={data.publicUrl}
-              alt=""
-              className="mb-2 w-full rounded-[16px] object-cover"
-              style={{ breakInside: 'avoid' }}
-            />
-          )
-        })}
-      </div>
+      {(photos ?? []).length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
+          <p className="text-4xl mb-3">🐾</p>
+          <p className="font-bold text-[#211922]">아직 사진이 없어요</p>
+          <p className="text-sm text-[#91918c] mt-1">위 버튼으로 첫 사진을 추가해보세요.</p>
+        </div>
+      ) : (
+        <div style={{ columns: 2, columnGap: 8 }}>
+          {(photos ?? []).map((p: any) => {
+            const { data } = (supabase as any).storage.from('photos').getPublicUrl(p.storage_path)
+            return (
+              <img
+                key={p.id}
+                src={data.publicUrl}
+                alt=""
+                className="mb-2 w-full rounded-[16px] object-cover"
+                style={{ breakInside: 'avoid' }}
+              />
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

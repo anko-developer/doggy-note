@@ -84,6 +84,16 @@ export default function AnnouncementsPage() {
         </div>
       )}
 
+      {(announcements ?? []).length === 0 && !isWriting && (
+        <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
+          <p className="text-4xl mb-3">📢</p>
+          <p className="font-bold text-[#211922]">공지사항이 없어요</p>
+          <p className="text-sm text-[#91918c] mt-1">
+            {role === 'teacher' ? '새 공지를 작성해보세요.' : '선생님의 공지를 기다리고 있어요.'}
+          </p>
+        </div>
+      )}
+
       {(announcements ?? []).map((a: any) => (
         <div key={a.id} className="rounded-[20px] border border-[#e5e5e0] bg-white p-4">
           <p className="text-xs text-[#91918c] mb-1">
