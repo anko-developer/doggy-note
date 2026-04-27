@@ -22,14 +22,26 @@ export default function AnnouncementsPage() {
     },
   })
 
+  // 보호자는 user_profiles에 daycare_id가 없으므로 강아지를 통해 daycare_id를 조회
+  const { data: guardianDog } = useQuery({
+    queryKey: ['guardian-dog', user?.id],
+    enabled: !!user && role === 'guardian',
+    queryFn: async () => {
+      const { data } = await (supabase as any).from('dogs').select('daycare_id').eq('owner_id', user!.id).limit(1).single()
+      return data
+    },
+  })
+
+  const daycareId = role === 'guardian' ? guardianDog?.daycare_id : profile?.daycare_id
+
   const { data: announcements } = useQuery({
-    queryKey: ['announcements', profile?.daycare_id],
-    enabled: !!profile?.daycare_id,
+    queryKey: ['announcements', daycareId],
+    enabled: !!daycareId,
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from('announcements')
         .select('*')
-        .eq('daycare_id', profile!.daycare_id!)
+        .eq('daycare_id', daycareId!)
         .order('published_at', { ascending: false })
       return data ?? []
     },
@@ -38,7 +50,7 @@ export default function AnnouncementsPage() {
   const create = useMutation({
     mutationFn: async () => {
       await (supabase as any).from('announcements').insert({
-        daycare_id: profile!.daycare_id!,
+        daycare_id: daycareId!,
         teacher_id: user!.id,
         title,
         body,
