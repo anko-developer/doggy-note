@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useDogPhotos, useUploadPhoto } from '@/hooks/usePhotos'
 
 function PhotoGrid({ dogId }: { dogId: string }) {
-  const { data: photos } = useDogPhotos(dogId)
+  const { data: photos, isLoading: photosLoading } = useDogPhotos(dogId)
   const upload = useUploadPhoto(dogId)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -30,7 +30,7 @@ function PhotoGrid({ dogId }: { dogId: string }) {
       >
         + 사진 추가
       </button>
-      {(photos ?? []).length === 0 ? (
+      {!photosLoading && (photos ?? []).length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
           <p className="text-4xl mb-3">🐾</p>
           <p className="font-bold text-[#211922]">아직 사진이 없어요</p>

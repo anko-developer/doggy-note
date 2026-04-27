@@ -33,7 +33,7 @@ export default function SchedulePage() {
 
   const daycareId = role === 'guardian' ? guardianDog?.daycare_id : profile?.daycare_id
 
-  const { data: schedules } = useQuery({
+  const { data: schedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ['schedules', daycareId],
     enabled: !!daycareId,
     queryFn: async () => {
@@ -85,7 +85,7 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {(schedules ?? []).length === 0 && !isAdding && (
+      {!schedulesLoading && (schedules ?? []).length === 0 && !isAdding && (
         <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
           <p className="text-4xl mb-3">📅</p>
           <p className="font-bold text-[#211922]">예정된 일정이 없어요</p>
