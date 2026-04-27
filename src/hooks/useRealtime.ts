@@ -8,7 +8,7 @@ export function useReportRealtime(dogId: string) {
   useEffect(() => {
     if (!dogId) return
 
-    const channel = (supabase as any)
+    const channel = supabase
       .channel(`reports:${dogId}`)
       .on(
         'postgres_changes',
@@ -18,14 +18,15 @@ export function useReportRealtime(dogId: string) {
           table: 'daily_reports',
           filter: `dog_id=eq.${dogId}`,
         },
-        (payload: any) => {
-          if (payload.new && payload.new.published_at) {
+        (payload) => {
+          const next = payload.new as { published_at?: string | null }
+          if (next?.published_at) {
             qc.invalidateQueries({ queryKey: ['reports', dogId] })
           }
         }
       )
       .subscribe()
 
-    return () => { (supabase as any).removeChannel(channel) }
+    return () => { supabase.removeChannel(channel) }
   }, [dogId, qc])
 }

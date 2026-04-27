@@ -11,8 +11,12 @@ export default function GuardianFeedPage() {
     queryKey: ['my-dogs', user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await (supabase as any).from('dogs').select('*').eq('owner_id', user!.id)
-      return data ?? []
+      const { data, error } = await supabase
+        .from('dogs')
+        .select('*')
+        .eq('owner_id', user!.id)
+      if (error) throw error
+      return data
     },
   })
 
@@ -23,14 +27,15 @@ export default function GuardianFeedPage() {
     queryKey: ['reports', primaryDog?.id],
     enabled: !!primaryDog,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await supabase
         .from('daily_reports')
         .select('*')
         .eq('dog_id', primaryDog!.id)
         .not('published_at', 'is', null)
         .order('date', { ascending: false })
         .limit(20)
-      return data ?? []
+      if (error) throw error
+      return data
     },
   })
 
@@ -47,8 +52,10 @@ export default function GuardianFeedPage() {
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
       <h1 className="text-xl font-bold text-[#111111]">{primaryDog.name}의 알림장</h1>
-      {reports?.map((r: any) => <ReportCard key={r.id} report={r} />)}
-      {reports !== undefined && reports.length === 0 && <p className="text-center text-sm text-[#9E9EA0]">아직 받은 알림장이 없어요 🐾</p>}
+      {reports?.map((r) => <ReportCard key={r.id} report={r} />)}
+      {reports !== undefined && reports.length === 0 && (
+        <p className="text-center text-sm text-[#9E9EA0]">아직 받은 알림장이 없어요 🐾</p>
+      )}
     </div>
   )
 }

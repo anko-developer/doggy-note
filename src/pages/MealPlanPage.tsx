@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { useDaycareId } from '@/hooks/useProfile'
 import type { MealPlanEntry } from '@/types/domain'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,45 +17,46 @@ function getMonday(d = new Date()) {
 }
 
 export default function MealPlanPage() {
-  const { user, role } = useAuth()
+  const { role } = useAuth()
   const qc = useQueryClient()
+  const daycareId = useDaycareId()
   const weekStart = getMonday()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<MealPlanEntry[]>(
     DAYS.map(day => ({ day, morning: '', lunch: '', snack: '' }))
   )
-
-  const { data: profile } = useQuery({
-    queryKey: ['profile', user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await (supabase as any).from('user_profiles').select('daycare_id').eq('id', user!.id).single()
-      return data
-    },
-  })
+  const [submitError, setSubmitError] = useState('')
 
   const { data: plan } = useQuery({
-    queryKey: ['meal-plan', profile?.daycare_id, weekStart],
-    enabled: !!profile?.daycare_id,
+    queryKey: ['meal-plan', daycareId, weekStart],
+    enabled: !!daycareId,
     queryFn: async () => {
-      const { data } = await (supabase as any).from('meal_plans').select('*')
-        .eq('daycare_id', profile!.daycare_id!).eq('week_start', weekStart).single()
+      const { data, error } = await supabase
+        .from('meal_plans')
+        .select('*')
+        .eq('daycare_id', daycareId!)
+        .eq('week_start', weekStart)
+        .maybeSingle()
+      if (error) throw error
       return data
     },
   })
 
   const save = useMutation({
     mutationFn: async () => {
-      await (supabase as any).from('meal_plans').upsert({
-        daycare_id: profile!.daycare_id!,
+      const { error } = await supabase.from('meal_plans').upsert({
+        daycare_id: daycareId!,
         week_start: weekStart,
         entries: draft,
       })
+      if (error) throw error
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['meal-plan'] })
       setEditing(false)
+      setSubmitError('')
     },
+    onError: () => setSubmitError('식단 저장에 실패했어요. 다시 시도해주세요.'),
   })
 
   const entries: MealPlanEntry[] = (plan?.entries as MealPlanEntry[]) ?? []
@@ -65,7 +67,7 @@ export default function MealPlanPage() {
         <h1 className="text-xl font-bold text-[#111111]">이번 주 식단</h1>
         {role === 'teacher' && (
           <Button onClick={() => { setDraft(entries.length ? entries : draft); setEditing(!editing) }}
-            variant="outline" size="sm" className="rounded-[16px]">
+            variant="outline" size="sm" className="rounded-[30px]">
             {editing ? '취소' : '수정'}
           </Button>
         )}
@@ -83,7 +85,7 @@ export default function MealPlanPage() {
                   <Input key={meal} value={d[meal]}
                     onChange={ev => setDraft(prev => prev.map(p => p.day === day ? { ...p, [meal]: ev.target.value } : p))}
                     placeholder={meal === 'morning' ? '아침' : meal === 'lunch' ? '점심' : '간식'}
-                    className="rounded-[16px] text-sm" />
+                    className="rounded-[8px] text-sm" />
                 ))}
               </div>
             ) : (
@@ -98,10 +100,13 @@ export default function MealPlanPage() {
       })}
 
       {editing && (
-        <Button onClick={() => save.mutate()} disabled={save.isPending}
-          className="rounded-[16px] bg-[#111111] text-white">
-          {save.isPending ? '저장 중...' : '식단 저장'}
-        </Button>
+        <>
+          {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+          <Button onClick={() => save.mutate()} disabled={save.isPending}
+            className="rounded-[30px] bg-[#111111] text-white">
+            {save.isPending ? '저장 중...' : '식단 저장'}
+          </Button>
+        </>
       )}
     </div>
   )

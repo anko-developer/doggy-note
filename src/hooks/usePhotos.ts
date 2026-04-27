@@ -6,13 +6,14 @@ export function useDogPhotos(dogId: string) {
     queryKey: ['photos', dogId],
     enabled: !!dogId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await supabase
         .from('photos')
         .select('*')
         .eq('dog_id', dogId)
         .order('taken_at', { ascending: false })
         .limit(20)
-      return data ?? []
+      if (error) throw error
+      return data
     },
   })
 }
@@ -22,11 +23,14 @@ export function useUploadPhoto(dogId: string) {
   return useMutation({
     mutationFn: async (file: File) => {
       const path = `${dogId}/${Date.now()}-${file.name}`
-      const { error: uploadError } = await (supabase as any).storage.from('photos').upload(path, file)
+      const { error: uploadError } = await supabase.storage.from('photos').upload(path, file)
       if (uploadError) throw uploadError
-      const { error: dbError } = await (supabase as any).from('photos').insert({ dog_id: dogId, storage_path: path })
+      const { error: dbError } = await supabase.from('photos').insert({ dog_id: dogId, storage_path: path })
       if (dbError) throw dbError
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['photos', dogId] }),
+    onError: (error) => {
+      console.error('사진 업로드 실패:', error)
+    },
   })
 }

@@ -13,22 +13,29 @@ export default function JoinDaycare({ userId, onJoined }: Props) {
   async function handleJoin() {
     setLoading(true)
     setError('')
-    const { data: daycare } = await (supabase as any)
+
+    const { data: daycare, error: findErr } = await supabase
       .from('daycares')
       .select('id')
       .eq('join_code', code.toUpperCase())
       .single()
 
-    if (!daycare) {
+    if (findErr || !daycare) {
       setError('유치원 코드를 찾을 수 없어요.')
       setLoading(false)
       return
     }
 
-    await (supabase as any)
+    const { error: updateErr } = await supabase
       .from('user_profiles')
       .update({ daycare_id: daycare.id })
       .eq('id', userId)
+
+    if (updateErr) {
+      setError('합류 처리에 실패했어요.')
+      setLoading(false)
+      return
+    }
 
     onJoined(daycare.id)
     setLoading(false)
@@ -43,14 +50,10 @@ export default function JoinDaycare({ userId, onJoined }: Props) {
         onChange={e => setCode(e.target.value.toUpperCase())}
         placeholder="ABCD12"
         maxLength={6}
-        className="text-center text-2xl tracking-widest rounded-[16px]"
+        className="text-center text-2xl tracking-widest rounded-[8px]"
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <Button
-        onClick={handleJoin}
-        disabled={code.length !== 6 || loading}
-        className="rounded-[16px] bg-[#111111] text-white"
-      >
+      {error && <p className="text-sm text-red-500">{error}</p>}
+      <Button onClick={handleJoin} disabled={code.length !== 6 || loading} className="rounded-[30px] bg-[#111111] text-white">
         {loading ? '확인 중...' : '합류하기'}
       </Button>
     </div>

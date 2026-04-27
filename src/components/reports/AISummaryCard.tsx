@@ -29,26 +29,33 @@ export default function AISummaryCard({ reportId, existingSummary, failed, dogNa
 
   const generate = useMutation({
     mutationFn: async () => {
-      const { data, error } = await (supabase as any).functions.invoke('generate-summary', {
+      const { data, error } = await supabase.functions.invoke('generate-summary', {
         body: { dog_name: dogName, ...reportData },
       })
-      if (error || data?.error) throw new Error(data?.error ?? 'Failed')
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
       return data.summary as string
     },
     onSuccess: async (text) => {
       setSummary(text)
       setIsFailed(false)
-      await (supabase as any).from('daily_reports').update({ ai_summary: text, ai_summary_failed: false }).eq('id', reportId)
-      qc.invalidateQueries({ queryKey: ['report'] })
+      const { error } = await supabase
+        .from('daily_reports')
+        .update({ ai_summary: text, ai_summary_failed: false })
+        .eq('id', reportId)
+      if (!error) qc.invalidateQueries({ queryKey: ['report'] })
     },
     onError: async () => {
       setIsFailed(true)
-      await (supabase as any).from('daily_reports').update({ ai_summary_failed: true }).eq('id', reportId)
+      await supabase
+        .from('daily_reports')
+        .update({ ai_summary_failed: true })
+        .eq('id', reportId)
     },
   })
 
   return (
-    <div className="rounded-[12px] border border-[#CACACB] bg-[hsla(60,20%,98%,0.5)] p-4">
+    <div className="rounded-[12px] border border-[#CACACB] bg-[#FAFAFA] p-4">
       <div className="mb-2 flex items-center gap-2">
         <span className="text-xs font-medium text-[#9E9EA0]">✨ AI 요약</span>
         {!generate.isPending && (
@@ -64,7 +71,10 @@ export default function AISummaryCard({ reportId, existingSummary, failed, dogNa
       </div>
       {generate.isPending && <p className="text-sm text-[#9E9EA0] animate-pulse">요약 생성 중...</p>}
       {isFailed && !generate.isPending && (
-        <p className="text-sm text-red-500">요약 생성에 실패했어요. <button onClick={() => generate.mutate()} className="underline">재시도</button></p>
+        <p className="text-sm text-red-500">
+          요약 생성에 실패했어요.{' '}
+          <button onClick={() => generate.mutate()} className="underline">재시도</button>
+        </p>
       )}
       {summary && !generate.isPending && (
         <p className="text-sm text-[#111111] leading-relaxed">{summary}</p>

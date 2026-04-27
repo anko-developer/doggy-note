@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { useDaycareId } from '@/hooks/useProfile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -9,57 +10,44 @@ import { Textarea } from '@/components/ui/textarea'
 export default function AnnouncementsPage() {
   const { user, role } = useAuth()
   const qc = useQueryClient()
+  const daycareId = useDaycareId()
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [isWriting, setIsWriting] = useState(false)
-
-  const { data: profile } = useQuery({
-    queryKey: ['profile', user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await (supabase as any).from('user_profiles').select('daycare_id').eq('id', user!.id).single()
-      return data
-    },
-  })
-
-  // 보호자는 user_profiles에 daycare_id가 없으므로 강아지를 통해 daycare_id를 조회
-  const { data: guardianDog } = useQuery({
-    queryKey: ['guardian-dog', user?.id],
-    enabled: !!user && role === 'guardian',
-    queryFn: async () => {
-      const { data } = await (supabase as any).from('dogs').select('daycare_id').eq('owner_id', user!.id).limit(1).single()
-      return data
-    },
-  })
-
-  const daycareId = role === 'guardian' ? guardianDog?.daycare_id : profile?.daycare_id
+  const [submitError, setSubmitError] = useState('')
 
   const { data: announcements } = useQuery({
     queryKey: ['announcements', daycareId],
     enabled: !!daycareId,
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await supabase
         .from('announcements')
         .select('*')
         .eq('daycare_id', daycareId!)
         .order('published_at', { ascending: false })
-      return data ?? []
+      if (error) throw error
+      return data
     },
   })
 
   const create = useMutation({
     mutationFn: async () => {
-      await (supabase as any).from('announcements').insert({
+      const { error } = await supabase.from('announcements').insert({
         daycare_id: daycareId!,
         teacher_id: user!.id,
         title,
         body,
       })
+      if (error) throw error
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['announcements'] })
-      setTitle(''); setBody(''); setIsWriting(false)
+      setTitle('')
+      setBody('')
+      setIsWriting(false)
+      setSubmitError('')
     },
+    onError: () => setSubmitError('공지 등록에 실패했어요. 다시 시도해주세요.'),
   })
 
   return (
@@ -67,7 +55,7 @@ export default function AnnouncementsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-[#111111]">공지사항</h1>
         {role === 'teacher' && (
-          <Button onClick={() => setIsWriting(!isWriting)} variant="outline" size="sm" className="rounded-[16px]">
+          <Button onClick={() => setIsWriting(!isWriting)} variant="outline" size="sm" className="rounded-[30px]">
             {isWriting ? '취소' : '작성'}
           </Button>
         )}
@@ -75,10 +63,11 @@ export default function AnnouncementsPage() {
 
       {isWriting && (
         <div className="flex flex-col gap-3 rounded-[20px] bg-[#F5F5F5] p-4">
-          <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="제목" className="rounded-[16px]" />
-          <Textarea value={body} onChange={e => setBody(e.target.value)} placeholder="내용" className="rounded-[16px] min-h-[100px]" />
+          <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="제목" className="rounded-[8px]" />
+          <Textarea value={body} onChange={e => setBody(e.target.value)} placeholder="내용" className="rounded-[8px] min-h-[100px]" />
+          {submitError && <p className="text-sm text-red-500">{submitError}</p>}
           <Button onClick={() => create.mutate()} disabled={!title || !body || create.isPending}
-            className="rounded-[16px] bg-[#111111] text-white">
+            className="rounded-[30px] bg-[#111111] text-white">
             {create.isPending ? '저장 중...' : '공지 올리기'}
           </Button>
         </div>
@@ -94,10 +83,10 @@ export default function AnnouncementsPage() {
         </div>
       )}
 
-      {(announcements ?? []).map((a: any) => (
+      {(announcements ?? []).map((a) => (
         <div key={a.id} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
           <p className="text-xs text-[#9E9EA0] mb-1">
-            {new Date(a.published_at).toLocaleDateString('ko-KR')}
+            {new Date(a.published_at ?? a.created_at ?? '').toLocaleDateString('ko-KR')}
           </p>
           <p className="font-bold text-[#111111] mb-1">{a.title}</p>
           <p className="text-sm text-[#707072] whitespace-pre-wrap">{a.body}</p>

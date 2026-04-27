@@ -6,16 +6,16 @@ export function generateInviteToken(): string {
 
 export async function createInvite(dogId: string, daycareId: string) {
   const token = generateInviteToken()
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('invites')
     .insert({ token, dog_id: dogId, daycare_id: daycareId })
     .select('token')
     .single()
   if (error) throw error
-  return data.token as string
+  return data.token
 }
 
 export async function acceptInvite(token: string) {
-  const { error } = await (supabase as any).rpc('accept_invite', { p_token: token })
+  const { error } = await supabase.rpc('accept_invite', { p_token: token })
   if (error) throw error
 }

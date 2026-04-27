@@ -1,36 +1,33 @@
+import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { MOOD_LABELS, MEALS_LABELS } from '@/types/domain'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import type { Tables } from '@/types/supabase'
 
-type Report = {
-  id: string
-  mood: string
-  meals_eaten: string
-  walk_count: number
-  walk_distance_km: number
-  ai_summary: string | null
-  teacher_note: string | null
-  confirmed_at: string | null
-  published_at: string | null
-  date: string
-  food_brand_today: string | null
-}
+type Report = Tables<'daily_reports'>
 
 type Props = { report: Report }
 
 export default function ReportCard({ report }: Props) {
   const qc = useQueryClient()
   const confirmed = !!report.confirmed_at
+  const [error, setError] = useState('')
 
   const confirm = useMutation({
     mutationFn: async () => {
-      await (supabase as any).from('daily_reports')
+      const { error } = await supabase
+        .from('daily_reports')
         .update({ confirmed_at: new Date().toISOString() })
         .eq('id', report.id)
+      if (error) throw error
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['reports'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['reports'] })
+      setError('')
+    },
+    onError: () => setError('확인 처리에 실패했어요.'),
   })
 
   return (
@@ -58,11 +55,13 @@ export default function ReportCard({ report }: Props) {
         <p className="mt-2 text-xs text-[#707072] italic">"{report.teacher_note}"</p>
       )}
 
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+
       {!confirmed && (
         <Button
           onClick={() => confirm.mutate()}
           disabled={confirm.isPending}
-          className="mt-4 w-full rounded-[16px] bg-[#111111] text-white"
+          className="mt-4 w-full rounded-[30px] bg-[#111111] text-white"
         >
           확인했어요 ✓
         </Button>

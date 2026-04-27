@@ -26,7 +26,7 @@ function PhotoGrid({ dogId }: { dogId: string }) {
       />
       <button
         onClick={() => inputRef.current?.click()}
-        className="mb-4 w-full rounded-[16px] border border-dashed border-[#CACACB] py-4 text-sm text-[#9E9EA0]"
+        className="mb-4 w-full rounded-[30px] border border-dashed border-[#CACACB] py-4 text-sm text-[#9E9EA0]"
       >
         + 사진 추가
       </button>
@@ -38,8 +38,8 @@ function PhotoGrid({ dogId }: { dogId: string }) {
         </div>
       ) : (
         <div style={{ columns: 2, columnGap: 8 }}>
-          {(photos ?? []).map((p: any) => {
-            const { data } = (supabase as any).storage.from('photos').getPublicUrl(p.storage_path)
+          {(photos ?? []).map((p) => {
+            const { data } = supabase.storage.from('photos').getPublicUrl(p.storage_path)
             return (
               <img
                 key={p.id}
@@ -62,8 +62,13 @@ export default function AlbumPage() {
     queryKey: ['my-dogs', user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await (supabase as any).from('dogs').select('*').eq('owner_id', user!.id).limit(1)
-      return data ?? []
+      const { data, error } = await supabase
+        .from('dogs')
+        .select('*')
+        .eq('owner_id', user!.id)
+        .limit(1)
+      if (error) throw error
+      return data
     },
   })
 

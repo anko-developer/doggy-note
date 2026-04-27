@@ -20,12 +20,13 @@ export function useTodayReport(dogId: string) {
   return useQuery({
     queryKey: ['report', dogId, today],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await supabase
         .from('daily_reports')
         .select('*')
         .eq('dog_id', dogId)
         .eq('date', today)
-        .single()
+        .maybeSingle()
+      if (error) throw error
       return data
     },
   })
@@ -37,16 +38,28 @@ export function useUpsertReport() {
     mutationFn: async (draft: ReportDraft & { id?: string }) => {
       const { id, ...fields } = draft
       if (id) {
-        const { data, error } = await (supabase as any).from('daily_reports').update(fields).eq('id', id).select().single()
+        const { data, error } = await supabase
+          .from('daily_reports')
+          .update(fields)
+          .eq('id', id)
+          .select()
+          .single()
         if (error) throw error
         return data
       }
-      const { data, error } = await (supabase as any).from('daily_reports').insert(fields).select().single()
+      const { data, error } = await supabase
+        .from('daily_reports')
+        .insert(fields)
+        .select()
+        .single()
       if (error) throw error
       return data
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['report', data.dog_id] })
+    },
+    onError: (error) => {
+      console.error('알림장 저장 실패:', error)
     },
   })
 }
@@ -55,7 +68,7 @@ export function usePublishReport() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (reportId: string) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('daily_reports')
         .update({ published_at: new Date().toISOString() })
         .eq('id', reportId)
@@ -64,8 +77,11 @@ export function usePublishReport() {
       if (error) throw error
       return data
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['report', data.dog_id] })
+    },
+    onError: (error) => {
+      console.error('알림장 발송 실패:', error)
     },
   })
 }
