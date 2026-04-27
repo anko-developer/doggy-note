@@ -12,7 +12,6 @@ export default function TeacherHomePage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});
   const [inviteLoading, setInviteLoading] = useState<Record<string, boolean>>(
     {},
   );
@@ -41,7 +40,6 @@ export default function TeacherHomePage() {
     try {
       const token = await createInvite(dog.id, daycareId!);
       const link = `${window.location.origin}/invite/${token}`;
-      setInviteLinks((prev) => ({ ...prev, [dog.id]: link }));
       await navigator.clipboard.writeText(link);
       alert(`${dog.name} 초대 링크가 클립보드에 복사됐어요!`);
     } catch {
