@@ -34,7 +34,13 @@ export default function GuardianFeedPage() {
     },
   })
 
-  if (!primaryDog) return <div className="p-4 text-center text-[#91918c]">아직 연결된 강아지가 없어요.</div>
+  if (!primaryDog) return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 p-6 text-center">
+      <p className="text-4xl">🐾</p>
+      <p className="font-bold text-[#211922]">아직 연결된 강아지가 없어요</p>
+      <p className="text-sm text-[#91918c]">선생님께 초대 링크를 요청하고<br />링크를 클릭하면 자동으로 연결돼요.</p>
+    </div>
+  )
 
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">

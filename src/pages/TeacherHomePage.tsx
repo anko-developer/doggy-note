@@ -5,34 +5,24 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import DogForm from '@/components/dogs/DogForm'
 import { Button } from '@/components/ui/button'
+import { createInvite } from '@/hooks/useInvite'
 
 export default function TeacherHomePage() {
-  const { user } = useAuth()
+  const { user, daycareId } = useAuth()
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
-
-  const { data: profile } = useQuery({
-    queryKey: ['profile', user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from('user_profiles')
-        .select('daycare_id')
-        .eq('id', user!.id)
-        .single()
-      return data
-    },
-  })
+  const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({})
+  const [inviteLoading, setInviteLoading] = useState<Record<string, boolean>>({})
 
   const { data: dogs } = useQuery({
-    queryKey: ['dogs', profile?.daycare_id],
-    enabled: !!profile?.daycare_id,
+    queryKey: ['dogs', daycareId],
+    enabled: !!daycareId,
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from('dogs')
         .select('*')
-        .eq('daycare_id', profile!.daycare_id)
+        .eq('daycare_id', daycareId)
         .order('name')
       return data ?? []
     },
@@ -44,11 +34,25 @@ export default function TeacherHomePage() {
     navigate(`/report/${dogId}/write`)
   }
 
-  if (!profile?.daycare_id) {
+  async function handleInvite(dog: any) {
+    setInviteLoading(prev => ({ ...prev, [dog.id]: true }))
+    try {
+      const token = await createInvite(dog.id, daycareId!)
+      const link = `${window.location.origin}/invite/${token}`
+      setInviteLinks(prev => ({ ...prev, [dog.id]: link }))
+      await navigator.clipboard.writeText(link)
+      alert(`${dog.name} 초대 링크가 클립보드에 복사됐어요!`)
+    } catch {
+      alert('초대 링크 생성에 실패했어요.')
+    } finally {
+      setInviteLoading(prev => ({ ...prev, [dog.id]: false }))
+    }
+  }
+
+  if (!daycareId) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-6 text-center">
         <p className="text-[#91918c]">아직 유치원에 연결되지 않았어요.</p>
-        <p className="text-sm text-[#91918c]">온보딩을 다시 진행해주세요.</p>
       </div>
     )
   }
@@ -70,7 +74,7 @@ export default function TeacherHomePage() {
       {showForm && (
         <div className="rounded-[20px] border border-[#e5e5e0] bg-white">
           <DogForm
-            daycareId={profile.daycare_id}
+            daycareId={daycareId}
             teacherId={user!.id}
             onCreated={handleDogCreated}
           />
@@ -86,17 +90,30 @@ export default function TeacherHomePage() {
       )}
 
       {(dogs ?? []).map((dog: any) => (
-        <button
+        <div
           key={dog.id}
-          onClick={() => navigate(`/report/${dog.id}/write`)}
-          className="flex items-center justify-between rounded-[20px] border border-[#e5e5e0] bg-white p-4 text-left w-full"
+          className="rounded-[20px] border border-[#e5e5e0] bg-white p-4"
         >
-          <div>
-            <p className="font-bold text-[#211922]">{dog.name}</p>
-            {dog.breed && <p className="text-sm text-[#91918c]">{dog.breed}</p>}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="font-bold text-[#211922]">{dog.name}</p>
+              {dog.breed && <p className="text-sm text-[#91918c]">{dog.breed}</p>}
+            </div>
+            <button
+              onClick={() => navigate(`/report/${dog.id}/write`)}
+              className="text-sm text-[#e60023] font-medium"
+            >
+              알림장 쓰기 →
+            </button>
           </div>
-          <span className="text-sm text-[#e60023] font-medium">알림장 쓰기 →</span>
-        </button>
+          <button
+            onClick={() => handleInvite(dog)}
+            disabled={inviteLoading[dog.id]}
+            className="w-full rounded-[12px] border border-[#e5e5e0] py-2 text-sm text-[#62625b]"
+          >
+            {inviteLoading[dog.id] ? '생성 중...' : '🔗 보호자 초대 링크 복사'}
+          </button>
+        </div>
       ))}
     </div>
   )
