@@ -34,7 +34,7 @@ export default function GuardianFeedPage() {
     },
   })
 
-  if (!primaryDog) return (
+  if (dogs !== undefined && !primaryDog) return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 p-6 text-center">
       <p className="text-4xl">🐾</p>
       <p className="font-bold text-[#211922]">아직 연결된 강아지가 없어요</p>
@@ -46,7 +46,7 @@ export default function GuardianFeedPage() {
     <div className="flex flex-col gap-4 p-4 pb-24">
       <h1 className="text-xl font-bold text-[#211922]">{primaryDog.name}의 알림장</h1>
       {reports?.map((r: any) => <ReportCard key={r.id} report={r} />)}
-      {reports?.length === 0 && <p className="text-center text-sm text-[#91918c]">아직 받은 알림장이 없어요 🐾</p>}
+      {reports !== undefined && reports.length === 0 && <p className="text-center text-sm text-[#91918c]">아직 받은 알림장이 없어요 🐾</p>}
     </div>
   )
 }

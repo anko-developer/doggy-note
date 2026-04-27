@@ -34,7 +34,7 @@ export default function AnnouncementsPage() {
 
   const daycareId = role === 'guardian' ? guardianDog?.daycare_id : profile?.daycare_id
 
-  const { data: announcements, isLoading: announcementsLoading } = useQuery({
+  const { data: announcements } = useQuery({
     queryKey: ['announcements', daycareId],
     enabled: !!daycareId,
     queryFn: async () => {
@@ -84,7 +84,7 @@ export default function AnnouncementsPage() {
         </div>
       )}
 
-      {!announcementsLoading && (announcements ?? []).length === 0 && !isWriting && (
+      {announcements !== undefined && announcements.length === 0 && !isWriting && (
         <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#f6f6f3] py-14 text-center">
           <p className="text-4xl mb-3">📢</p>
           <p className="font-bold text-[#211922]">공지사항이 없어요</p>

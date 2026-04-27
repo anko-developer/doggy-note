@@ -81,7 +81,7 @@ export default function TeacherHomePage() {
         </div>
       )}
 
-      {(dogs ?? []).length === 0 && !showForm && (
+      {dogs !== undefined && dogs.length === 0 && !showForm && (
         <div className="py-12 text-center text-[#91918c]">
           <p className="text-4xl mb-4">🐾</p>
           <p>아직 등록된 강아지가 없어요.</p>
