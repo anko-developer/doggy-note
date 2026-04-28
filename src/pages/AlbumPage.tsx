@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -8,10 +8,16 @@ function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) 
   const { data: photos } = useDogPhotos(dogId)
   const upload = useUploadPhoto(dogId)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [uploadError, setUploadError] = useState('')
 
   function handleFiles(files: FileList | null) {
     if (!files) return
-    Array.from(files).forEach(f => upload.mutate(f))
+    setUploadError('')
+    Array.from(files).forEach(f =>
+      upload.mutate(f, {
+        onError: () => setUploadError('사진 업로드에 실패했어요. 다시 시도해주세요.'),
+      })
+    )
   }
 
   return (
@@ -27,11 +33,15 @@ function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) 
             onChange={e => handleFiles(e.target.files)}
           />
           <button
-            onClick={() => inputRef.current?.click()}
-            className="mb-4 w-full rounded-[30px] border border-dashed border-[#CACACB] py-4 text-sm text-[#9E9EA0]"
+            onClick={() => { setUploadError(''); inputRef.current?.click() }}
+            disabled={upload.isPending}
+            className="mb-2 w-full rounded-[30px] border border-dashed border-[#CACACB] py-4 text-sm text-[#9E9EA0] disabled:opacity-50"
           >
-            + 사진 추가
+            {upload.isPending ? '업로드 중...' : '+ 사진 추가'}
           </button>
+          {uploadError && (
+            <p className="mb-3 text-center text-sm text-red-500">{uploadError}</p>
+          )}
         </>
       )}
       {photos !== undefined && photos.length === 0 ? (
