@@ -28,11 +28,12 @@ export default function ReportWritePage() {
   const { data: dog } = useQuery({
     queryKey: ["dog", dogId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await supabase
         .from("dogs")
         .select("*")
         .eq("id", dogId!)
         .single();
+      if (error) throw error
       return data;
     },
   });

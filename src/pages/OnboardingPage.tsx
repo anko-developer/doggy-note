@@ -41,12 +41,12 @@ export default function OnboardingPage() {
   async function handleRoleSelect(selectedRole: UserRole) {
     if (!user) return
     setSaving(true)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('user_profiles') as any).insert({
+    const { error } = await supabase.from('user_profiles').insert({
       id: user.id,
       role: selectedRole,
       display_name: user.user_metadata?.full_name ?? '',
     })
+    if (error) console.error('프로필 생성 실패:', error)
     if (selectedRole === 'teacher') navigate('/onboarding/join-daycare')
     else navigate('/feed')
     setSaving(false)

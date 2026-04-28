@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Navigate } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/hooks/useAuth"
@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button"
 import { createInvite } from "@/hooks/useInvite"
 
 export default function TeacherHomePage() {
-  const { user, daycareId } = useAuth()
+  const { user, role, daycareId } = useAuth()
+
+  if (role === 'guardian') return <Navigate to="/feed" replace />
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)

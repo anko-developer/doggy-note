@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useDogPhotos, useUploadPhoto } from '@/hooks/usePhotos'
 
-function PhotoGrid({ dogId }: { dogId: string }) {
+function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) {
   const { data: photos } = useDogPhotos(dogId)
   const upload = useUploadPhoto(dogId)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -16,25 +16,29 @@ function PhotoGrid({ dogId }: { dogId: string }) {
 
   return (
     <div>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={e => handleFiles(e.target.files)}
-      />
-      <button
-        onClick={() => inputRef.current?.click()}
-        className="mb-4 w-full rounded-[30px] border border-dashed border-[#CACACB] py-4 text-sm text-[#9E9EA0]"
-      >
-        + 사진 추가
-      </button>
+      {canUpload && (
+        <>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={e => handleFiles(e.target.files)}
+          />
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="mb-4 w-full rounded-[30px] border border-dashed border-[#CACACB] py-4 text-sm text-[#9E9EA0]"
+          >
+            + 사진 추가
+          </button>
+        </>
+      )}
       {photos !== undefined && photos.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#F5F5F5] py-14 text-center">
           <p className="text-4xl mb-3">🐾</p>
           <p className="font-bold text-[#111111]">아직 사진이 없어요</p>
-          <p className="text-sm text-[#9E9EA0] mt-1">위 버튼으로 첫 사진을 추가해보세요.</p>
+          {canUpload && <p className="text-sm text-[#9E9EA0] mt-1">위 버튼으로 첫 사진을 추가해보세요.</p>}
         </div>
       ) : (
         <div style={{ columns: 2, columnGap: 8 }}>
@@ -57,11 +61,21 @@ function PhotoGrid({ dogId }: { dogId: string }) {
 }
 
 export default function AlbumPage() {
-  const { user } = useAuth()
+  const { user, role, daycareId } = useAuth()
+
   const { data: dogs } = useQuery({
-    queryKey: ['my-dogs', user?.id],
-    enabled: !!user,
+    queryKey: role === 'teacher' ? ['daycare-dogs', daycareId] : ['my-dogs', user?.id],
+    enabled: role === 'teacher' ? !!daycareId : !!user,
     queryFn: async () => {
+      if (role === 'teacher') {
+        const { data, error } = await supabase
+          .from('dogs')
+          .select('*')
+          .eq('daycare_id', daycareId!)
+          .order('name')
+        if (error) throw error
+        return data
+      }
       const { data, error } = await supabase
         .from('dogs')
         .select('*')
@@ -72,13 +86,33 @@ export default function AlbumPage() {
     },
   })
 
-  const dog = dogs?.[0]
-  if (!dog) return <div className="p-4 text-center text-[#9E9EA0]">강아지를 먼저 등록해주세요.</div>
+  if (!dogs) return null
+
+  if (dogs.length === 0) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 p-6 text-center">
+        <p className="text-4xl">🐾</p>
+        <p className="font-bold text-[#111111]">
+          {role === 'teacher' ? '등록된 강아지가 없어요' : '연결된 강아지가 없어요'}
+        </p>
+        <p className="text-sm text-[#9E9EA0]">
+          {role === 'teacher' ? '홈에서 강아지를 추가해보세요.' : '선생님께 초대 링크를 요청해보세요.'}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 pb-24">
       <h1 className="mb-4 text-xl font-bold text-[#111111]">앨범</h1>
-      <PhotoGrid dogId={dog.id} />
+      {dogs.map(dog => (
+        <div key={dog.id} className="mb-6">
+          {role === 'teacher' && dogs.length > 1 && (
+            <p className="mb-2 text-sm font-bold text-[#111111]">{dog.name}</p>
+          )}
+          <PhotoGrid dogId={dog.id} canUpload={role === 'teacher'} />
+        </div>
+      ))}
     </div>
   )
 }

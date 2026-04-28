@@ -9,9 +9,9 @@ describe('MoodChip', () => {
     expect(onSelect).toHaveBeenCalledWith('happy')
   })
 
-  it('선택된 상태에서 배경색이 brand red', () => {
+  it('선택된 상태에서 배경색이 brand black', () => {
     render(<MoodChip mood="happy" selected={true} onSelect={vi.fn()} />)
     const btn = screen.getByRole('button')
-    expect(btn.className).toContain('bg-[#e60023]')
+    expect(btn.className).toContain('bg-[#111111]')
   })
 })
