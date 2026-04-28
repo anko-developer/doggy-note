@@ -35,3 +35,19 @@ export function useUploadPhoto(dogId: string) {
     },
   })
 }
+
+export function useDeletePhoto(dogId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, storagePath }: { id: string; storagePath: string }) => {
+      const { error: storageError } = await supabase.storage.from('photos').remove([storagePath])
+      if (storageError) throw storageError
+      const { error: dbError } = await supabase.from('photos').delete().eq('id', id)
+      if (dbError) throw dbError
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['photos', dogId] }),
+    onError: (error) => {
+      console.error('사진 삭제 실패:', error)
+    },
+  })
+}

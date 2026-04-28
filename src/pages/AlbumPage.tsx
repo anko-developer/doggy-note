@@ -2,11 +2,12 @@ import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { useDogPhotos, useUploadPhoto } from '@/hooks/usePhotos'
+import { useDogPhotos, useUploadPhoto, useDeletePhoto } from '@/hooks/usePhotos'
 
 function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) {
   const { data: photos } = useDogPhotos(dogId)
   const upload = useUploadPhoto(dogId)
+  const del = useDeletePhoto(dogId)
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploadError, setUploadError] = useState('')
 
@@ -18,6 +19,11 @@ function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) 
         onError: () => setUploadError('사진 업로드에 실패했어요. 다시 시도해주세요.'),
       })
     )
+  }
+
+  function handleDelete(id: string, storagePath: string) {
+    if (!confirm('이 사진을 삭제할까요?')) return
+    del.mutate({ id, storagePath })
   }
 
   return (
@@ -55,13 +61,23 @@ function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) 
           {(photos ?? []).map((p) => {
             const { data } = supabase.storage.from('photos').getPublicUrl(p.storage_path)
             return (
-              <img
-                key={p.id}
-                src={data.publicUrl}
-                alt=""
-                className="mb-2 w-full rounded-[16px] object-cover"
-                style={{ breakInside: 'avoid' }}
-              />
+              <div key={p.id} className="relative mb-2" style={{ breakInside: 'avoid' }}>
+                <img
+                  src={data.publicUrl}
+                  alt=""
+                  className="w-full rounded-[16px] object-cover"
+                />
+                {canUpload && (
+                  <button
+                    onClick={() => handleDelete(p.id, p.storage_path)}
+                    disabled={del.isPending}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white text-xs disabled:opacity-50"
+                    aria-label="사진 삭제"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             )
           })}
         </div>
