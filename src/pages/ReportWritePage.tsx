@@ -180,6 +180,7 @@ export default function ReportWritePage() {
           existingSummary={report.ai_summary ?? undefined}
           failed={report.ai_summary_failed ?? false}
           dogName={dog?.name ?? ""}
+          onBeforeGenerate={handleSave}
           reportData={{
             meals_eaten: meals,
             food_brand: foodBrand,

@@ -1,4 +1,10 @@
+import { createClient } from 'npm:@supabase/supabase-js'
+
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY') ?? ''
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+)
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,7 +17,13 @@ Deno.serve(async (req) => {
   try {
     if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: corsHeaders })
 
-    const { dog_name, meals_eaten, food_brand, walk_count, walk_distance_km, training_log, mood, teacher_note } = await req.json()
+    // 문제 4: API key 미설정 조기 검증
+    if (!OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY is not configured')
+      return Response.json({ error: 'AI 서비스가 설정되지 않았어요.' }, { status: 500, headers: corsHeaders })
+    }
+
+    const { report_id, dog_name, meals_eaten, food_brand, walk_count, walk_distance_km, training_log, mood, teacher_note } = await req.json()
 
     const moodKo: Record<string, string> = {
       sleepy: '졸린', neutral: '보통', happy: '기분 좋은', excited: '신난'
@@ -48,13 +60,26 @@ ${teacher_note ? `선생님 메모: ${teacher_note}` : ''}
     })
 
     const data = await res.json()
-    console.log('OpenAI response status:', res.status)
     if (!res.ok) {
       console.error('OpenAI error:', JSON.stringify(data))
+      // 문제 3: DB 실패 기록을 Edge Function에서 직접 처리
+      if (report_id) {
+        await supabase.from('daily_reports').update({ ai_summary_failed: true }).eq('id', report_id)
+      }
       return Response.json({ error: 'OpenAI 오류' }, { status: 500, headers: corsHeaders })
     }
 
     const summary = data.choices?.[0]?.message?.content ?? ''
+
+    // 문제 2: Edge Function이 직접 DB에 저장 (유실 방지)
+    if (report_id) {
+      const { error: dbError } = await supabase
+        .from('daily_reports')
+        .update({ ai_summary: summary, ai_summary_failed: false })
+        .eq('id', report_id)
+      if (dbError) console.error('DB update failed:', dbError)
+    }
+
     return Response.json({ summary }, { headers: corsHeaders })
   } catch (error) {
     console.error('Function error:', error)

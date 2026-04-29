@@ -20,37 +20,33 @@ type Props = {
   failed: boolean
   dogName: string
   reportData: ReportData
+  onBeforeGenerate?: () => Promise<void>
 }
 
-export default function AISummaryCard({ reportId, existingSummary, failed, dogName, reportData }: Props) {
+export default function AISummaryCard({ reportId, existingSummary, failed, dogName, reportData, onBeforeGenerate }: Props) {
   const [summary, setSummary] = useState(existingSummary)
   const [isFailed, setIsFailed] = useState(failed)
   const qc = useQueryClient()
 
   const generate = useMutation({
     mutationFn: async () => {
+      if (onBeforeGenerate) await onBeforeGenerate()
       const { data, error } = await supabase.functions.invoke('generate-summary', {
-        body: { dog_name: dogName, ...reportData },
+        body: { report_id: reportId, dog_name: dogName, ...reportData },
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
       return data.summary as string
     },
-    onSuccess: async (text) => {
+    onSuccess: (text) => {
+      // DB 저장은 Edge Function이 처리 — 로컬 state만 업데이트
       setSummary(text)
       setIsFailed(false)
-      const { error } = await supabase
-        .from('daily_reports')
-        .update({ ai_summary: text, ai_summary_failed: false })
-        .eq('id', reportId)
-      if (!error) qc.invalidateQueries({ queryKey: ['report'] })
+      qc.invalidateQueries({ queryKey: ['report'] })
     },
-    onError: async () => {
+    onError: () => {
+      // DB 실패 기록도 Edge Function이 처리
       setIsFailed(true)
-      await supabase
-        .from('daily_reports')
-        .update({ ai_summary_failed: true })
-        .eq('id', reportId)
     },
   })
 
