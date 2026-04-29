@@ -75,6 +75,9 @@ export function usePublishReport() {
         .select()
         .single()
       if (error) throw error
+      // 이메일 알림 — 발송 실패해도 publish 자체는 성공으로 처리
+      supabase.functions.invoke('notify-guardian', { body: { report_id: reportId } })
+        .catch(e => console.error('이메일 알림 실패:', e))
       return data
     },
     onSuccess: (data) => {
