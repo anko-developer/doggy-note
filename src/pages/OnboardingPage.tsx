@@ -41,12 +41,24 @@ export default function OnboardingPage() {
   async function handleRoleSelect(selectedRole: UserRole) {
     if (!user) return
     setSaving(true)
-    const { error } = await supabase.from('user_profiles').insert({
-      id: user.id,
-      role: selectedRole,
-      display_name: user.user_metadata?.full_name ?? '',
-    })
-    if (error) console.error('프로필 생성 실패:', error)
+    const displayName = user.user_metadata?.full_name ?? ''
+
+    const { data: existing } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const { error } = existing
+      ? await supabase
+          .from('user_profiles')
+          .update({ role: selectedRole, display_name: displayName })
+          .eq('id', user.id)
+      : await supabase
+          .from('user_profiles')
+          .insert({ id: user.id, role: selectedRole, display_name: displayName })
+
+    if (error) { console.error('프로필 생성 실패:', error); setSaving(false); return }
     if (selectedRole === 'teacher') navigate('/onboarding/join-daycare')
     else navigate('/feed')
     setSaving(false)

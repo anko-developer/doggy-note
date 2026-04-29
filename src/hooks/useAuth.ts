@@ -34,7 +34,7 @@ async function fetchProfile(userId: string): Promise<{ role: UserRole | null; da
     .from('user_profiles')
     .select('role, daycare_id')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
   const row = data as { role: string; daycare_id: string | null } | null
   return {
     role: (row?.role as UserRole) ?? null,

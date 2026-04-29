@@ -38,14 +38,14 @@ export default function JoinDaycarePage() {
   if (mode === 'create') {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
-        <CreateDaycare userId={user.id} onCreated={() => navigate('/', { replace: true })} />
+        <CreateDaycare userId={user.id} onCreated={() => { window.location.replace('/') }} />
       </div>
     )
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
-      <JoinDaycare userId={user.id} onJoined={() => navigate('/', { replace: true })} />
+      <JoinDaycare userId={user.id} onJoined={() => { window.location.replace('/') }} />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth, signInWithGoogle } from '@/hooks/useAuth'
 import { acceptInvite } from '@/hooks/useInvite'
+import { supabase } from '@/lib/supabase'
 
 export default function InviteAcceptPage() {
   const { token } = useParams<{ token: string }>()
@@ -14,7 +15,21 @@ export default function InviteAcceptPage() {
     if (!user || !token || status !== 'idle') return
     setStatus('accepting')
     acceptInvite(token)
-      .then(() => { setStatus('done'); setTimeout(() => navigate('/feed'), 1500) })
+      .then(async () => {
+        // 초대 수락한 사용자에게 guardian 프로필이 없으면 생성
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle()
+        if (!profile) {
+          await supabase
+            .from('user_profiles')
+            .insert({ id: user.id, role: 'guardian', daycare_id: null })
+        }
+        setStatus('done')
+        setTimeout(() => navigate('/feed'), 1500)
+      })
       .catch((e: Error) => { setStatus('error'); setErrorMsg(e.message) })
   }, [user, token, status, navigate])
 

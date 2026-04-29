@@ -5,9 +5,12 @@ import TabBar from '@/components/layout/TabBar'
 export default function AppLayout() {
   const { user, role, daycareId, loading } = useAuth()
 
+  const currentPath = window.location.pathname
+
   if (loading) return <div className="flex min-h-screen items-center justify-center">로딩 중...</div>
   if (!user || !role) return <Navigate to="/onboarding" replace />
   if (role === 'teacher' && !daycareId) return <Navigate to="/onboarding/join-daycare" replace />
+  if (role === 'guardian' && currentPath === '/') return <Navigate to="/feed" replace />
 
   return (
     <div className="mx-auto min-h-screen max-w-md bg-white">

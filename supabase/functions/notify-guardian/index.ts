@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Doggy-note <noreply@doggy-note.app>',
+        from: 'Doggy-note <onboarding@resend.dev>',
         to: ownerEmail,
         subject: `🐾 ${dogName}의 오늘 알림장이 도착했어요`,
         html: `

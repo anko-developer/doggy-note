@@ -47,12 +47,18 @@ export function useUpsertReport() {
         if (error) throw error
         return data
       }
-      const { data, error } = await supabase
+      const { error: insertError } = await supabase
         .from('daily_reports')
         .insert(fields)
-        .select()
+      if (insertError) throw insertError
+      // RETURNING이 RLS에 막히는 경우를 대비해 별도 SELECT로 id 조회
+      const { data, error: selectError } = await supabase
+        .from('daily_reports')
+        .select('*')
+        .eq('dog_id', fields.dog_id)
+        .eq('date', fields.date)
         .single()
-      if (error) throw error
+      if (selectError) throw selectError
       return data
     },
     onSuccess: (data) => {

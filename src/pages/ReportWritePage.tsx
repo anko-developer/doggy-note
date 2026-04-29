@@ -21,7 +21,7 @@ export default function ReportWritePage() {
   const { dogId } = useParams<{ dogId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: report } = useTodayReport(dogId!);
+  const { data: report, isLoading: reportLoading } = useTodayReport(dogId!);
   const upsert = useUpsertReport();
   const publish = usePublishReport();
 
@@ -38,6 +38,7 @@ export default function ReportWritePage() {
     },
   });
 
+  const [savedReportId, setSavedReportId] = useState<string | undefined>()
   const [mood, setMood] = useState<Mood>("neutral");
   const [meals, setMeals] = useState<MealsEaten>("full");
   const [foodBrand, setFoodBrand] = useState("");
@@ -58,8 +59,8 @@ export default function ReportWritePage() {
   }, [report, dog]);
 
   async function handleSave() {
-    await upsert.mutateAsync({
-      id: report?.id,
+    const result = await upsert.mutateAsync({
+      id: report?.id ?? savedReportId,
       dog_id: dogId!,
       teacher_id: user!.id,
       date: new Date().toISOString().split("T")[0],
@@ -71,6 +72,7 @@ export default function ReportWritePage() {
       training_log: training,
       teacher_note: note,
     });
+    setSavedReportId(result.id);
   }
 
   async function handlePublish() {
@@ -169,7 +171,7 @@ export default function ReportWritePage() {
         onClick={handleSave}
         variant="outline"
         className="rounded-[16px]"
-        disabled={upsert.isPending}
+        disabled={upsert.isPending || reportLoading}
       >
         {upsert.isPending ? "저장 중..." : "내용 저장"}
       </Button>
