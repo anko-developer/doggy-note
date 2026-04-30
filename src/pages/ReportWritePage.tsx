@@ -16,12 +16,15 @@ import type { Mood, MealsEaten, TrainingEntry } from "@/types/domain";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useMinLoading } from "@/hooks/useMinLoading";
 
 export default function ReportWritePage() {
   const { dogId } = useParams<{ dogId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: report, isLoading: reportLoading } = useTodayReport(dogId!);
+  const { data: report, isLoading: reportQueryLoading } = useTodayReport(dogId!);
+  const reportLoading = useMinLoading(reportQueryLoading, report !== undefined);
   const upsert = useUpsertReport();
   const publish = usePublishReport();
 
@@ -82,6 +85,41 @@ export default function ReportWritePage() {
   }
 
   const isPublished = !!report?.published_at;
+
+  if (reportLoading) return (
+    <div className="flex flex-col gap-6 p-4 pb-24">
+      <Skeleton className="h-7 w-40" />
+      <section>
+        <Skeleton className="h-4 w-16 mb-2" />
+        <div className="flex flex-wrap gap-2">
+          {[0, 1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-24 rounded-[30px]" />)}
+        </div>
+      </section>
+      <section>
+        <Skeleton className="h-4 w-20 mb-2" />
+        <div className="flex gap-2 mb-2">
+          {[0, 1, 2].map(i => <Skeleton key={i} className="h-10 w-28 rounded-[30px]" />)}
+        </div>
+        <Skeleton className="h-10 w-full rounded-[16px]" />
+      </section>
+      <section>
+        <Skeleton className="h-4 w-12 mb-2" />
+        <div className="flex gap-4">
+          <Skeleton className="h-10 flex-1 rounded-[16px]" />
+          <Skeleton className="h-10 flex-1 rounded-[16px]" />
+        </div>
+      </section>
+      <section>
+        <Skeleton className="h-4 w-10 mb-2" />
+        <Skeleton className="h-10 w-full rounded-[16px]" />
+      </section>
+      <section>
+        <Skeleton className="h-4 w-24 mb-2" />
+        <Skeleton className="h-28 w-full rounded-[16px]" />
+      </section>
+      <Skeleton className="h-11 w-full rounded-[16px]" />
+    </div>
+  )
 
   return (
     <div className="flex flex-col gap-6 p-4 pb-24">

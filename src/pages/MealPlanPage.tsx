@@ -6,6 +6,8 @@ import { useDaycareId } from '@/hooks/useProfile'
 import type { MealPlanEntry } from '@/types/domain'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useMinLoading } from '@/hooks/useMinLoading'
 
 const DAYS: MealPlanEntry['day'][] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 const DAY_KO: Record<string, string> = { Mon: '월', Tue: '화', Wed: '수', Thu: '목', Fri: '금' }
@@ -27,7 +29,7 @@ export default function MealPlanPage() {
   )
   const [submitError, setSubmitError] = useState('')
 
-  const { data: plan } = useQuery({
+  const { data: plan, isLoading: planLoading } = useQuery({
     queryKey: ['meal-plan', daycareId, weekStart],
     enabled: !!daycareId,
     queryFn: async () => {
@@ -59,7 +61,26 @@ export default function MealPlanPage() {
     onError: () => setSubmitError('식단 저장에 실패했어요. 다시 시도해주세요.'),
   })
 
+  const isLoading = useMinLoading(planLoading, plan !== undefined)
+
   const entries: MealPlanEntry[] = (plan?.entries as MealPlanEntry[]) ?? []
+
+  if (isLoading) return (
+    <div className="flex flex-col gap-4 p-4 pb-24">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-7 w-28" />
+        <Skeleton className="h-8 w-16 rounded-[30px]" />
+      </div>
+      {DAYS.map(day => (
+        <div key={day} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
+          <Skeleton className="h-5 w-14 mb-3" />
+          <Skeleton className="h-4 w-32 mb-2" />
+          <Skeleton className="h-4 w-28 mb-2" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      ))}
+    </div>
+  )
 
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
@@ -90,9 +111,9 @@ export default function MealPlanPage() {
               </div>
             ) : (
               <div className="flex flex-col gap-1 text-sm text-[#707072]">
-                <span>🌅 {e.morning}</span>
-                <span>☀️ {e.lunch}</span>
-                <span>🍪 {e.snack}</span>
+                <span>🌅 {e.morning || '-'}</span>
+                <span>☀️ {e.lunch || '-'}</span>
+                <span>🍪 {e.snack || '-'}</span>
               </div>
             )}
           </div>

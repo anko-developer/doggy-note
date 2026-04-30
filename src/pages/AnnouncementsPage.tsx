@@ -6,6 +6,8 @@ import { useDaycareId } from '@/hooks/useProfile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useMinLoading } from '@/hooks/useMinLoading'
 
 export default function AnnouncementsPage() {
   const { user, role } = useAuth()
@@ -16,7 +18,7 @@ export default function AnnouncementsPage() {
   const [isWriting, setIsWriting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
-  const { data: announcements } = useQuery({
+  const { data: announcements, isLoading: announcementsLoading } = useQuery({
     queryKey: ['announcements', daycareId],
     enabled: !!daycareId,
     queryFn: async () => {
@@ -50,6 +52,8 @@ export default function AnnouncementsPage() {
     onError: () => setSubmitError('공지 등록에 실패했어요. 다시 시도해주세요.'),
   })
 
+  const isLoading = useMinLoading(announcementsLoading, !!announcements)
+
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
       <div className="flex items-center justify-between">
@@ -73,7 +77,16 @@ export default function AnnouncementsPage() {
         </div>
       )}
 
-      {announcements !== undefined && announcements.length === 0 && !isWriting && (
+      {isLoading && !isWriting && [0, 1, 2].map(i => (
+        <div key={i} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
+          <Skeleton className="h-3 w-16 mb-2" />
+          <Skeleton className="h-5 w-40 mb-2" />
+          <Skeleton className="h-4 w-full mb-1" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      ))}
+
+      {!isLoading && announcements !== undefined && announcements.length === 0 && !isWriting && (
         <div className="flex flex-col items-center justify-center rounded-[20px] bg-[#F5F5F5] py-14 text-center">
           <p className="text-4xl mb-3">📢</p>
           <p className="font-bold text-[#111111]">공지사항이 없어요</p>

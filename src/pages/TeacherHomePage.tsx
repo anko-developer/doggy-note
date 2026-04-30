@@ -5,10 +5,13 @@ import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/hooks/useAuth"
 import DogForm from "@/components/dogs/DogForm"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useMinLoading } from "@/hooks/useMinLoading"
 import { createInvite } from "@/hooks/useInvite"
 
 export default function TeacherHomePage() {
-  const { user, role, daycareId } = useAuth()
+  const { user, role, daycareId, loading } = useAuth()
+  const showSkeleton = useMinLoading(loading, !!daycareId)
 
   if (role === 'guardian') return <Navigate to="/feed" replace />
   const navigate = useNavigate()
@@ -51,6 +54,27 @@ export default function TeacherHomePage() {
       setInviteLoading(prev => ({ ...prev, [dog.id]: false }))
     }
   }
+
+  if (showSkeleton) return (
+    <div className="flex flex-col gap-4 p-4 pb-24">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-7 w-32" />
+        <Skeleton className="h-8 w-24 rounded-[30px]" />
+      </div>
+      {[0, 1].map(i => (
+        <div key={i} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col gap-1">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="h-4 w-20" />
+          </div>
+          <Skeleton className="h-10 w-full rounded-[30px]" />
+        </div>
+      ))}
+    </div>
+  )
 
   if (!daycareId) {
     return (

@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useDogPhotos, useUploadPhoto, useDeletePhoto } from '@/hooks/usePhotos'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useMinLoading } from '@/hooks/useMinLoading'
 
 function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) {
   const { data: photos } = useDogPhotos(dogId)
@@ -89,7 +91,7 @@ function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) 
 export default function AlbumPage() {
   const { user, role, daycareId } = useAuth()
 
-  const { data: dogs } = useQuery({
+  const { data: dogs, isLoading: dogsQueryLoading } = useQuery({
     queryKey: role === 'teacher' ? ['daycare-dogs', daycareId] : ['my-dogs', user?.id],
     enabled: role === 'teacher' ? !!daycareId : !!user,
     queryFn: async () => {
@@ -111,6 +113,21 @@ export default function AlbumPage() {
       return data
     },
   })
+
+  const isLoading = useMinLoading(dogsQueryLoading, !!dogs)
+
+  if (isLoading) return (
+    <div className="p-4 pb-24">
+      <Skeleton className="h-7 w-16 mb-4" />
+      <div style={{ columns: 2, columnGap: 8 }}>
+        {[160, 220, 200, 140].map((h, i) => (
+          <div key={i} className="mb-2" style={{ breakInside: 'avoid' }}>
+            <Skeleton className="w-full rounded-[16px]" style={{ height: h }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   if (!dogs) return null
 

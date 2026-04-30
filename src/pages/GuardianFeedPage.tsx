@@ -3,11 +3,13 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useReportRealtime } from '@/hooks/useRealtime'
 import ReportCard from '@/components/reports/ReportCard'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useMinLoading } from '@/hooks/useMinLoading'
 
 export default function GuardianFeedPage() {
   const { user } = useAuth()
 
-  const { data: dogs } = useQuery({
+  const { data: dogs, isLoading: dogsQueryLoading } = useQuery({
     queryKey: ['my-dogs', user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -23,7 +25,7 @@ export default function GuardianFeedPage() {
   const primaryDog = dogs?.[0]
   useReportRealtime(primaryDog?.id ?? '')
 
-  const { data: reports } = useQuery({
+  const { data: reports, isLoading: reportsQueryLoading } = useQuery({
     queryKey: ['reports', primaryDog?.id],
     enabled: !!primaryDog,
     queryFn: async () => {
@@ -39,6 +41,24 @@ export default function GuardianFeedPage() {
     },
   })
 
+  const dogsLoading = useMinLoading(dogsQueryLoading, !!dogs)
+  const reportsLoading = useMinLoading(reportsQueryLoading, !!reports)
+
+  if (dogsLoading) return (
+    <div className="flex flex-col gap-4 p-4 pb-24">
+      <Skeleton className="h-7 w-40 mb-1" />
+      {[0, 1, 2].map(i => (
+        <div key={i} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
+          <Skeleton className="h-3 w-20 mb-2" />
+          <Skeleton className="h-5 w-44 mb-3" />
+          <Skeleton className="h-4 w-full mb-1" />
+          <Skeleton className="h-4 w-3/4 mb-4" />
+          <Skeleton className="h-10 w-full rounded-[30px]" />
+        </div>
+      ))}
+    </div>
+  )
+
   if (!dogs) return null
 
   if (!primaryDog) return (
@@ -52,7 +72,16 @@ export default function GuardianFeedPage() {
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
       <h1 className="text-xl font-bold text-[#111111]">{primaryDog.name}의 알림장</h1>
-      {reports?.map((r) => <ReportCard key={r.id} report={r} />)}
+      {reportsLoading && [0, 1].map(i => (
+        <div key={i} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
+          <Skeleton className="h-3 w-20 mb-2" />
+          <Skeleton className="h-5 w-44 mb-3" />
+          <Skeleton className="h-4 w-full mb-1" />
+          <Skeleton className="h-4 w-3/4 mb-4" />
+          <Skeleton className="h-10 w-full rounded-[30px]" />
+        </div>
+      ))}
+      {!reportsLoading && reports?.map((r) => <ReportCard key={r.id} report={r} />)}
       {reports !== undefined && reports.length === 0 && (
         <p className="text-center text-sm text-[#9E9EA0]">아직 받은 알림장이 없어요 🐾</p>
       )}
