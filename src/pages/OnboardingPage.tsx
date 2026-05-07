@@ -5,13 +5,14 @@ import { signInWithGoogle, useAuth } from "@/hooks/useAuth";
 import RoleSelect from "@/components/onboarding/RoleSelect";
 import type { UserRole } from "@/types/domain";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function OnboardingPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const [_saving, setSaving] = useState(false);
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="flex min-h-screen items-center justify-center"><Spinner className="size-8" /></div>;
 
   if (user) {
     const pendingToken = localStorage.getItem("pendingInviteToken");

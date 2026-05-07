@@ -12,7 +12,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --color-brand: #18d089;
+  --color-brand: #919191;
   --color-text-primary: #222222;
   --color-text-secondary: #444444;
   --color-text-muted: #8e8e8e;
@@ -27,7 +27,7 @@
   --card-foreground: oklch(0.144 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.144 0 0);
-  --primary: #18d089;
+  --primary: #919191;
   --primary-foreground: #ffffff;
   --secondary: oklch(0.961 0 0);
   --secondary-foreground: oklch(0.144 0 0);

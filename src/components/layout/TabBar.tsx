@@ -1,42 +1,51 @@
-import { NavLink } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
-import { cn } from '@/lib/utils'
+import { NavLink } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
+import {
+  Home,
+  Megaphone,
+  Calendar,
+  Image,
+  UtensilsCrossed,
+  NotebookPen,
+} from "lucide-react";
 
 const TEACHER_TABS = [
-  { to: '/', label: '홈', icon: '🏠' },
-  { to: '/announcements', label: '공지', icon: '📢' },
-  { to: '/schedule', label: '일정', icon: '📅' },
-  { to: '/album', label: '앨범', icon: '📷' },
-  { to: '/meal-plan', label: '식단', icon: '🍽' },
-]
+  { to: "/", icon: Home },
+  { to: "/announcements", icon: Megaphone },
+  { to: "/schedule", icon: Calendar },
+  { to: "/album", icon: Image },
+  { to: "/meal-plan", icon: UtensilsCrossed },
+];
 
 const GUARDIAN_TABS = [
-  { to: '/feed', label: '알림장', icon: '📝' },
-  { to: '/announcements', label: '공지', icon: '📢' },
-  { to: '/schedule', label: '일정', icon: '📅' },
-  { to: '/album', label: '앨범', icon: '📷' },
-]
+  { to: "/feed", icon: NotebookPen },
+  { to: "/announcements", icon: Megaphone },
+  { to: "/schedule", icon: Calendar },
+  { to: "/album", icon: Image },
+];
 
 export default function TabBar() {
-  const { role } = useAuth()
-  const tabs = role === 'teacher' ? TEACHER_TABS : GUARDIAN_TABS
+  const { role } = useAuth();
+  const tabs = role === "teacher" ? TEACHER_TABS : GUARDIAN_TABS;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 flex border-t border-[#CACACB] bg-white">
-      {tabs.map(tab => (
+      {tabs.map((tab) => (
         <NavLink
           key={tab.to}
           to={tab.to}
-          end={tab.to === '/'}
-          className={({ isActive }) => cn(
-            'flex flex-1 flex-col items-center gap-0.5 py-2 text-xs',
-            isActive ? 'text-[#111111] font-medium' : 'text-[#9E9EA0]'
-          )}
+          end={tab.to === "/"}
+          className={({ isActive }) =>
+            cn(
+              "flex flex-1 flex-col items-center gap-0.5 py-3 text-xs",
+              isActive ? "text-[#111111] font-medium" : "text-[#9E9EA0]",
+            )
+          }
         >
-          <span className="text-lg">{tab.icon}</span>
-          <span>{tab.label}</span>
+          <tab.icon className="size-6" />
         </NavLink>
       ))}
     </nav>
-  )
+  );
 }
