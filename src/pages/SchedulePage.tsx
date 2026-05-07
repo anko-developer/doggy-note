@@ -7,6 +7,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMinLoading } from '@/hooks/useMinLoading'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 
 export default function SchedulePage() {
   const { role } = useAuth()
@@ -17,6 +26,7 @@ export default function SchedulePage() {
   const [desc, setDesc] = useState('')
   const [isAdding, setIsAdding] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
 
   const { data: schedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ['schedules', daycareId],
@@ -30,6 +40,17 @@ export default function SchedulePage() {
         .order('event_date')
       if (error) throw error
       return data
+    },
+  })
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('schedules').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['schedules'] })
+      setDeleteTarget(null)
     },
   })
 
@@ -99,13 +120,54 @@ export default function SchedulePage() {
 
       {(schedules ?? []).map((s) => (
         <div key={s.id} className="rounded-[20px] border border-[#CACACB] bg-white p-4">
-          <p className="text-xs text-[#9E9EA0] mb-1">
-            {new Date(s.event_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
-          </p>
-          <p className="font-bold text-[#111111]">{s.title}</p>
-          {s.description && <p className="text-sm text-[#707072] mt-1">{s.description}</p>}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#9E9EA0] mb-1">
+                {new Date(s.event_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
+              </p>
+              <p className="font-bold text-[#111111]">{s.title}</p>
+              {s.description && <p className="text-sm text-[#707072] mt-1">{s.description}</p>}
+            </div>
+            {role === 'teacher' && (
+              <button
+                onClick={() => setDeleteTarget({ id: s.id, title: s.title })}
+                className="shrink-0 mt-0.5 text-[#CACACB] hover:text-red-400 transition-colors"
+                aria-label="삭제"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6M14 11v6" />
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       ))}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>일정 삭제</DialogTitle>
+            <DialogDescription>
+              &ldquo;{deleteTarget?.title}&rdquo; 일정을 삭제할까요?{"\n"}삭제한 일정은 복구할 수 없어요.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose className="flex-1">
+              <Button variant="outline" className="w-full rounded-[12px]">취소</Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              className="flex-1 rounded-[12px]"
+              disabled={remove.isPending}
+              onClick={() => deleteTarget && remove.mutate(deleteTarget.id)}
+            >
+              {remove.isPending ? '삭제 중...' : '삭제'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

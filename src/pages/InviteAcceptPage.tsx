@@ -25,7 +25,7 @@ export default function InviteAcceptPage() {
         if (!profile) {
           await supabase
             .from('user_profiles')
-            .insert({ id: user.id, role: 'guardian', daycare_id: null })
+            .insert({ id: user.id, role: 'guardian', daycare_id: null, display_name: user.user_metadata?.full_name ?? user.email ?? '' })
         }
         setStatus('done')
         setTimeout(() => navigate('/feed'), 1500)

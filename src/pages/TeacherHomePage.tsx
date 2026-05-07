@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useMinLoading } from "@/hooks/useMinLoading"
 import { createInvite } from "@/hooks/useInvite"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 export default function TeacherHomePage() {
   const { user, role, daycareId, loading } = useAuth()
@@ -19,6 +28,7 @@ export default function TeacherHomePage() {
   const [showForm, setShowForm] = useState(false)
   const [inviteLoading, setInviteLoading] = useState<Record<string, boolean>>({})
   const [inviteError, setInviteError] = useState('')
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null)
 
   const { data: dogs } = useQuery({
     queryKey: ["dogs", daycareId],
@@ -47,7 +57,7 @@ export default function TeacherHomePage() {
       const token = await createInvite(dog.id, daycareId!)
       const link = `${window.location.origin}/invite/${token}`
       await navigator.clipboard.writeText(link)
-      alert(`${dog.name} 초대 링크가 클립보드에 복사됐어요!`)
+      setInviteSuccess(dog.name)
     } catch {
       setInviteError('초대 링크 생성에 실패했어요.')
     } finally {
@@ -108,6 +118,22 @@ export default function TeacherHomePage() {
           <p className="text-sm mt-1">강아지를 추가하고 알림장을 써보세요!</p>
         </div>
       )}
+
+      <Dialog open={!!inviteSuccess} onOpenChange={(open) => { if (!open) setInviteSuccess(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>초대 링크 복사 완료</DialogTitle>
+            <DialogDescription>
+              {inviteSuccess} 보호자 초대 링크가 클립보드에 복사됐어요.{"\n"}보호자에게 링크를 전달해주세요.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose className="flex-1">
+              <Button className="w-full rounded-[12px]">확인</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {(dogs ?? []).map((dog) => (
         <div key={dog.id} className="rounded-[20px] border border-[#CACACB] bg-white p-4">

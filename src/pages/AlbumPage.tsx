@@ -5,6 +5,16 @@ import { useAuth } from '@/hooks/useAuth'
 import { useDogPhotos, useUploadPhoto, useDeletePhoto } from '@/hooks/usePhotos'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMinLoading } from '@/hooks/useMinLoading'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 
 function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) {
   const { data: photos } = useDogPhotos(dogId)
@@ -12,6 +22,7 @@ function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) 
   const del = useDeletePhoto(dogId)
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploadError, setUploadError] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; storagePath: string } | null>(null)
 
   function handleFiles(files: FileList | null) {
     if (!files) return
@@ -24,12 +35,37 @@ function PhotoGrid({ dogId, canUpload }: { dogId: string; canUpload: boolean }) 
   }
 
   function handleDelete(id: string, storagePath: string) {
-    if (!confirm('이 사진을 삭제할까요?')) return
-    del.mutate({ id, storagePath })
+    setDeleteTarget({ id, storagePath })
   }
 
   return (
     <div>
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>사진 삭제</DialogTitle>
+            <DialogDescription>이 사진을 삭제할까요? 삭제한 사진은 복구할 수 없어요.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose className="flex-1">
+              <Button variant="outline" className="w-full rounded-[12px]">취소</Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              className="flex-1 rounded-[12px]"
+              disabled={del.isPending}
+              onClick={() => {
+                if (deleteTarget) {
+                  del.mutate(deleteTarget, { onSuccess: () => setDeleteTarget(null) })
+                }
+              }}
+            >
+              {del.isPending ? '삭제 중...' : '삭제'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {canUpload && (
         <>
           <input
